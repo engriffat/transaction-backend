@@ -72,9 +72,16 @@ const processBlockTransactions = async (blockHeader) => {
                 for (const trx of contractTransactions) {
                     console.log('contract transactions:', contractTransactions.length);
                     const gasPriceInEth = (trx.gasPrice / 1e18);
-                    const response = await axios.get('https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT');
-                    console.log("price", response.data.price)
-                    const usdtPrice = response.data.price
+                    const response = await axios.get("https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?symbol=ETH", {
+                        headers: {
+                            'X-CMC_PRO_API_KEY': "d3464b4c-5e62-44bd-a512-7704be82fa46",
+                            'Accept': 'application/json'
+                        }
+                    });
+                    const usdtPrice = response.data.data.ETH.quote.USD.price;
+                    // const response = await axios.get('https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT');
+                    console.log("usdtPrice", usdtPrice)
+                    // const usdtPrice = ethPrice
                     let convert  = ( (parseFloat(gasPriceInEth) * parseFloat(usdtPrice) )).toFixed(5)
                     let convertTrxValueIntoEth = trx.value / 1e18;
                     let convertValueIntoDollar  = ( (parseFloat(convertTrxValueIntoEth) * parseFloat(usdtPrice) )).toFixed(5)
