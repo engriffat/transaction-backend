@@ -7,6 +7,8 @@ const Contract = require('../models/Contract')
 const get_transaction = async(req, res) => {
     try{
         let {contract_address, from_date, to_date, sorting, sorting_field, trx_hash, limit, page_number} = req.body;
+        console.log("from_date ==>>>>", from_date)
+        console.log("to_date ==>>>>", to_date)
         let query = {}
         if(contract_address){
             query.contract_address = contract_address; 
@@ -18,10 +20,13 @@ const get_transaction = async(req, res) => {
             query.transaction_hash = trx_hash
         }
         console.log(query);
+        console.log(query)
+        let count = await Transaction.countDocuments(query);
         let transactionData = await Transaction.find(query).sort({CreatedAt: -1}).skip((page_number - 1) * limit).limit(limit);
         return res.status(200).json({
             status: '200',
             data: transactionData,
+            count : count
         });
     }catch(error){
         return res.status(STATUS_CODE.FORBIDDEN).json({
