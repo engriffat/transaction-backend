@@ -14,7 +14,7 @@ const get_transaction = async(req, res) => {
             query.contract_address = contract_address; 
         }
         if(from_date && to_date){
-            query.CreatedAt = {$and : [{$gte : from_date}, {$lte : to_date}]}; 
+            query.createdAt = {$and : [{$gte : from_date}, {$lte : to_date}]}; 
         }
         if(trx_hash){
             query.transaction_hash = trx_hash
@@ -22,7 +22,7 @@ const get_transaction = async(req, res) => {
         console.log(query);
         console.log(query)
         let count = await Transaction.countDocuments(query);
-        let transactionData = await Transaction.find(query).sort({CreatedAt: -1}).skip((page_number - 1) * limit).limit(limit);
+        let transactionData = await Transaction.find(query).sort({createdAt: -1}).skip((page_number - 1) * limit).limit(limit);
         return res.status(200).json({
             status: '200',
             data: transactionData,
