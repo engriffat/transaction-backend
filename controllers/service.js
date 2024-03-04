@@ -54,6 +54,7 @@
 // const { exec } = require('child_process');
 const pm2 = require('pm2');
 const Web3 = require('web3');
+const axios = require('axios');
 const RPCURL = 'wss://eth-mainnet.g.alchemy.com/v2/b_J0rV5-81u-OwjBa-q4dVzAJWwtoS6b';
 const web3 = new Web3(new Web3.providers.WebsocketProvider(RPCURL));
 require('../utility/dbConn');
@@ -66,19 +67,26 @@ const processBlockTransactions = async (blockHeader) => {
         const contractsObject = await Contract.find();
         for (const contractObj of contractsObject) {
             const contractAddress = contractObj.contract_address;
-            console.log("contractAddress ===>>>>", contractAddress);
             const contractTransactions = transactions.filter(tx => tx.to === contractAddress || tx.from === contractAddress);
             if (contractTransactions.length > 0) {
                 for (const trx of contractTransactions) {
                     console.log('contract transactions:', contractTransactions.length);
-                    const gasPriceInEth = (trx.gasPrice / 1e18).toString();
+                    const gasPriceInEth = (trx.gasPrice / 1e18);
+                    const response = await axios.get('https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT');
+                    console.log("price", response.data.price)
+                    const usdtPrice = response.data.price
+                    let convert  = ( (parseFloat(gasPriceInEth) * parseFloat(usdtPrice) )).toFixed(5)
+                    let convertTrxValueIntoEth = trx.value / 1e18;
+                    let convertValueIntoDollar  = ( (parseFloat(convertTrxValueIntoEth) * parseFloat(usdtPrice) )).toFixed(5)
+                    console.log("orignal gas in wei ===>>>>", trx.gasPrice, " Convert into ETH ===>>>>",gasPriceInEth, " Convert into dollar ===>>>", convert)
+                    console.log("orignal value in wei ===>>>>", trx.value, " Convert into ETH ===>>>>",convertTrxValueIntoEth, " Convert into dollar ===>>>", convertValueIntoDollar)
                     const insertObject = {
                         chain_id: trx.chainId,
                         to_address: trx.to,
                         from_address: trx.from,
                         transaction_hash: trx.hash,
-                        gas: gasPriceInEth,
-                        value: trx.value
+                        gas: convert,
+                        value: convertValueIntoDollar
                     };
                     await Transaction.create(insertObject);
                 }
