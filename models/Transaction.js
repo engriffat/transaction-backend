@@ -1,10 +1,6 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 const transactionSchema = new Schema({
-    contract_address: {
-        type: String,
-        default : ""
-    },
     to_address: {
         type: String,
         default : ""
@@ -28,6 +24,22 @@ const transactionSchema = new Schema({
     chain_id : {
         type: Number,
         default : 0
+    },
+    status : {
+        type: String,
+        default : ""
+    },
+    maxFeePerGas: {
+        type: Number,
+        default : 0
+    },
+    nonce : {
+        type: Number,
+        default : 0
+    }, 
+    type : {
+        type : String,
+        default : ""
     }
 },
 {

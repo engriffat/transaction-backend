@@ -1,57 +1,3 @@
-// const Web3 = require('web3');
-// const RPCURL = 'wss://eth-mainnet.g.alchemy.com/v2/b_J0rV5-81u-OwjBa-q4dVzAJWwtoS6b';
-// const web3 = new Web3(new Web3.providers.WebsocketProvider(RPCURL));
-// require('../utility/dbConn');
-// const Transaction = require('../models/Transaction');
-// const Contract = require("../models/Contract");
-// const processBlockTransactions = async (blockHeader) => {
-//     try {
-//         const block = await web3.eth.getBlock(blockHeader.number, true);
-//         const transactions = block.transactions;
-//         const contractsObject = await Contract.find();
-//         for (const contractObj of contractsObject) {
-//             const contractAddress = contractObj.contract_address;
-//             console.log("contractAddress ===>>>>", contractAddress);
-//             const contractTransactions = transactions.filter(tx => tx.to === contractAddress || tx.from === contractAddress);
-//             if (contractTransactions.length > 0) {
-//                 for (const trx of contractTransactions) {
-//                     console.log('contract transactions:', contractTransactions.length);
-//                     const gasPriceInEth = (trx.gasPrice / 1e18).toString();
-//                     const insertObject = {
-//                         chain_id: trx.chainId,
-//                         to_address: trx.to,
-//                         from_address: trx.from,
-//                         transaction_hash: trx.hash,
-//                         gas: gasPriceInEth,
-//                         value: trx.value
-//                     };
-//                     await Transaction.create(insertObject);
-//                 }
-//             }
-//         }
-//     } catch (e) {
-//         console.error("Error processing block transactions:", e);
-//         subscribeToNewBlocks()
-//     }
-// };
-// const subscribeToNewBlocks = () => {
-//     web3.eth.subscribe('newBlockHeaders', async (error, result) => {
-//         if (error) {
-//             console.error('Error subscribing to new block headers:', error);
-//             subscribeToNewBlocks()
-//         }
-//     }).on('data', async (blockHeader) => {
-//         await processBlockTransactions(blockHeader);
-//     }).on('error', (error) => {
-//         console.error('WebSocket error:', error);
-//         subscribeToNewBlocks()
-//     }).on('end', () => {
-//         console.log('WebSocket connection closed');
-//         subscribeToNewBlocks()
-//     });
-// };
-// subscribeToNewBlocks();
-// const { exec } = require('child_process');
 const pm2 = require('pm2');
 const Web3 = require('web3');
 const axios = require('axios');
@@ -64,38 +10,38 @@ const processBlockTransactions = async (blockHeader) => {
     try {
         const block = await web3.eth.getBlock(blockHeader.number, true);
         const transactions = block.transactions;
+        console.log("transactions", transactions)
         const contractsObject = await Contract.find();
         for (const contractObj of contractsObject) {
             const contractAddress = contractObj.contract_address;
             const contractTransactions = transactions.filter(tx => tx.to === contractAddress || tx.from === contractAddress);
             if (contractTransactions.length > 0) {
                 for (const trx of contractTransactions) {
-                    console.log('contract transactions:', contractTransactions.length);
+                    // console.log('contract transactions:', contractTransactions.length);
                     const gasPriceInEth = (trx.gasPrice / 1e18);
-                    const response = await axios.get("https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?symbol=ETH", {
-                        headers: {
-                            'X-CMC_PRO_API_KEY': "d3464b4c-5e62-44bd-a512-7704be82fa46",
-                            'Accept': 'application/json'
-                        }
-                    });
-                    const usdtPrice = response.data.data.ETH.quote.USD.price;
-                    // const response = await axios.get('https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT');
-                    console.log("usdtPrice", usdtPrice)
-                    // const usdtPrice = ethPrice
-                    let convert  = ( (parseFloat(gasPriceInEth) * parseFloat(usdtPrice) )).toFixed(5)
-                    let convertTrxValueIntoEth = trx.value / 1e18;
-                    let convertValueIntoDollar  = ( (parseFloat(convertTrxValueIntoEth) * parseFloat(usdtPrice) )).toFixed(5)
-                    console.log("orignal gas in wei ===>>>>", trx.gasPrice, " Convert into ETH ===>>>>",gasPriceInEth, " Convert into dollar ===>>>", convert)
-                    console.log("orignal value in wei ===>>>>", trx.value, " Convert into ETH ===>>>>",convertTrxValueIntoEth, " Convert into dollar ===>>>", convertValueIntoDollar)
-                    const insertObject = {
-                        chain_id: trx.chainId,
-                        to_address: trx.to,
-                        from_address: trx.from,
-                        transaction_hash: trx.hash,
-                        gas: convert,
-                        value: convertValueIntoDollar
-                    };
-                    await Transaction.create(insertObject);
+                    // const response = await axios.get("https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?symbol=ETH", {
+                    //     headers: {
+                    //         'X-CMC_PRO_API_KEY': "d3464b4c-5e62-44bd-a512-7704be82fa46",
+                    //         'Accept': 'application/json'
+                    //     }
+                    // });
+                    // const usdtPrice = response.data.data.ETH.quote.USD.price;
+
+            
+                    // let convert  = ( (parseFloat(gasPriceInEth) * parseFloat(usdtPrice) )).toFixed(5)
+                    // let convertTrxValueIntoEth = trx.value / 1e18;
+                    // let convertValueIntoDollar  = ( (parseFloat(convertTrxValueIntoEth) * parseFloat(usdtPrice) )).toFixed(5)
+                    // console.log("orignal gas in wei ===>>>>", trx.gasPrice, " Convert into ETH ===>>>>",gasPriceInEth, " Convert into dollar ===>>>", convert)
+                    // console.log("orignal value in wei ===>>>>", trx.value, " Convert into ETH ===>>>>",convertTrxValueIntoEth, " Convert into dollar ===>>>", convertValueIntoDollar)
+                    // const insertObject = {
+                    //     chain_id: trx.chainId,
+                    //     to_address: trx.to,
+                    //     from_address: trx.from,
+                    //     transaction_hash: trx.hash,
+                    //     gas: convert,
+                    //     value: convertValueIntoDollar
+                    // };
+                    // await Transaction.create(insertObject);
                 }
             }
         }
