@@ -26,8 +26,6 @@ const processBlockTransactions = async (blockHeader) => {
                     //     }
                     // });
                     // const usdtPrice = response.data.data.ETH.quote.USD.price;
-
-            
                     // let convert  = ( (parseFloat(gasPriceInEth) * parseFloat(usdtPrice) )).toFixed(5)
                     // let convertTrxValueIntoEth = trx.value / 1e18;
                     // let convertValueIntoDollar  = ( (parseFloat(convertTrxValueIntoEth) * parseFloat(usdtPrice) )).toFixed(5)
