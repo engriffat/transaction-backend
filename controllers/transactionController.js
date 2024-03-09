@@ -15,7 +15,7 @@ const get_transaction = async(req, res) => {
             query.contract_address = contract_address; 
         }
         if(from_date && to_date){
-            query.createdAt = {$and : [{$gte : from_date}, {$lte : to_date}]}; 
+            query.createdAt = {$and : [{$gte : new Date(from_date)}, {$lte : new Date(to_date)}]}; 
         }
         if(trx_hash){
             query.transaction_hash = trx_hash
