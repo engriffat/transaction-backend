@@ -12,7 +12,7 @@ const get_transaction = async(req, res) => {
         console.log("to_date ==>>>>", to_date)
         let query = {}
         if(contract_address){
-            query = {$or : [{to_address : contract_address}, {from_address : contract_address}])
+            query = {$or : [{to_address : contract_address}, {from_address : contract_address}]}
         }
         if(from_date && to_date){
             query.createdAt = {$and : [{$gte : new Date(from_date)}, {$lte : new Date(to_date)}]}; 
