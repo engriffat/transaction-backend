@@ -7,18 +7,15 @@ const Contract = require('../models/Contract')
 const get_transaction = async(req, res) => {
     try{
         console.log(req.body)
-        let {contract_address, from_date, to_date, trx_hash, limit, page_number} = req.body;
+        let {contract_address, from_date, to_date, limit, page_number} = req.body;
         console.log("from_date ==>>>>", from_date)
         console.log("to_date ==>>>>", to_date)
         let query = {}
         if(contract_address){
-            query.createdAt = {$or : [{to_address : contract_address}, {from_address : contract_address}]}; 
+            query = {$or : [{to_address : contract_address}, {from_address : contract_address}]
         }
         if(from_date && to_date){
             query.createdAt = {$and : [{$gte : new Date(from_date)}, {$lte : new Date(to_date)}]}; 
-        }
-        if(trx_hash){
-            query.transaction_hash = trx_hash
         }
         console.log(query)
         let count = await Transaction.countDocuments(query);
