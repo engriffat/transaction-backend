@@ -20,6 +20,7 @@ const get_transaction = async(req, res) => {
         if(trx_hash){
             query.transaction_hash = trx_hash
         }
+        console.log(query)
         let count = await Transaction.countDocuments(query);
         let transactionData = await Transaction.aggregate([
             {
