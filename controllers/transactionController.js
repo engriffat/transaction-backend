@@ -15,7 +15,7 @@ const get_transaction = async(req, res) => {
             query = {$or : [{to_address : contract_address}, {from_address : contract_address}]}
         }
         if(from_date && to_date){
-            query.createdAt = {$and : [{$gte : new Date(from_date)}, {$lte : new Date(to_date)}]}; 
+            query['createdAt'] = { $gte: new Date(from_date), $lte: new Date(to_date) };
         }
         console.log(query)
         let count = await Transaction.countDocuments(query);
