@@ -40,7 +40,8 @@ const get_transaction = async(req, res) => {
             {
                 $group : {
                     _id : null,
-                    value : {$sum : "$value"}
+                    value : {$sum : "$value"},
+                    number_of_buyer : {$sum :1}
                 }
             }
         ])
@@ -54,7 +55,9 @@ const get_transaction = async(req, res) => {
             {
                 $group : {
                     _id : null,
-                    value : {$sum : "$value"}
+                    value : {$sum : "$value"},
+                    number_of_seller : {$sum :1}
+
                 }
             }
         ])
