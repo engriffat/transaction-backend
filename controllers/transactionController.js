@@ -77,6 +77,9 @@ const get_transaction = async(req, res) => {
             }
         ])
         let volumeData = await Volume.findOne({contract_address : contract_address})
+        let buyVolume =  buy_Volume.length > 0 ? buy_Volume[0].value : 0;
+        let sellVolume =  sell_Volume.length > 0 ? sell_Volume[0].value : 0;
+
         return res.status(200).json({
             status: '200',
             data: transactionData,
@@ -85,6 +88,7 @@ const get_transaction = async(req, res) => {
             vloume : volumeData,
             buy_volume: buy_Volume.length > 0 ? buy_Volume[0] : {},
             sell_volume: sell_Volume.length > 0 ? sell_Volume[0] : {},
+            net_volume :  buyVolume+sellVolume,
         });
     }catch(error){
         return res.status(STATUS_CODE.FORBIDDEN).json({
