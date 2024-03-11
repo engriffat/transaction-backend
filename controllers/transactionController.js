@@ -31,6 +31,36 @@ const get_transaction = async(req, res) => {
             }
         ])
 
+        let buy_Volume = await Transaction.aggregate([
+            {
+                $match : {
+                    to_address : contract_address
+                }
+            }, 
+            {
+                $group : {
+                    _id : null,
+                    value : {$sum : "$value"}
+                }
+            }
+        ])
+
+        let sell_Volume = await Transaction.aggregate([
+            {
+                $match : {
+                    from_address : contract_address
+                }
+            }, 
+            {
+                $group : {
+                    _id : null,
+                    value : {$sum : "$value"}
+                }
+            }
+        ])
+        console.log("sell volume ==>>>", sell_Volume)
+        console.log("buy volume ==>>>", buy_Volume)
+
         let calculation = await Transaction.aggregate([
             {
                 $match : query
@@ -44,15 +74,14 @@ const get_transaction = async(req, res) => {
             }
         ])
         let volumeData = await Volume.findOne({contract_address : contract_address})
-
-
-
         return res.status(200).json({
             status: '200',
             data: transactionData,
             count : count,
             calculation : calculation,
-            vloume : volumeData
+            vloume : volumeData,
+            buy_volume: buy_Volume.length > 0 ? buy_Volume[0] : {},
+            sell_volume: sell_Volume.length > 0 ? sell_Volume[0] : {},
         });
     }catch(error){
         return res.status(STATUS_CODE.FORBIDDEN).json({
