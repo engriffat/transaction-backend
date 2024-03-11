@@ -3,13 +3,11 @@ const { ERRORS, STATUS_CODE, SUCCESS_MSG, STATUS } = require("../constants/index
 const { ObjectId } = require('mongodb');
 const Transaction = require('../models/Transaction')
 const Contract = require('../models/Contract')
-
+const Volume = require('../models/Volume')
 const get_transaction = async(req, res) => {
     try{
         console.log(req.body)
         let {contract_address, from_date, to_date, limit, page_number} = req.body;
-        console.log("from_date ==>>>>", from_date)
-        console.log("to_date ==>>>>", to_date)
         let query = {}
         if(contract_address){
             query = {$or : [{to_address : contract_address}, {from_address : contract_address}]}
@@ -17,7 +15,6 @@ const get_transaction = async(req, res) => {
         if(from_date && to_date){
             query['createdAt'] = { $gte: new Date(from_date), $lte: new Date(to_date) };
         }
-        console.log(query)
         let count = await Transaction.countDocuments(query);
         let transactionData = await Transaction.aggregate([
             {
@@ -46,11 +43,16 @@ const get_transaction = async(req, res) => {
                 }
             }
         ])
+        let volumeData = await Volume.findOne({contract_address : contract_address})
+
+
+
         return res.status(200).json({
             status: '200',
             data: transactionData,
             count : count,
-            calculation : calculation
+            calculation : calculation,
+            vloume : volumeData
         });
     }catch(error){
         return res.status(STATUS_CODE.FORBIDDEN).json({
