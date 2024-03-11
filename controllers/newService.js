@@ -1,6 +1,7 @@
 const Web3 = require('web3');
 require('../utility/dbConn');
-let abi = require('../assets/Abi/abi.json')
+const pm2 = require('pm2');
+// let abi = require('../assets/Abi/abi.json')
 const Transaction = require('../models/Transaction');
 const Contract = require("../models/Contract");
 let RPCURL = 'wss://eth-mainnet.g.alchemy.com/v2/b_J0rV5-81u-OwjBa-q4dVzAJWwtoS6b'
@@ -33,11 +34,33 @@ web3.eth.subscribe('pendingTransactions', (error, transaction) => {
             }
         }).catch(error => {
             console.error('Error fetching transaction details:', error);
+            restartPm2()
         });
     } else {
         console.error('Error:', error);
+        restartPm2()
     }
 })
 .on('error', (error) => {
     console.error('WebSocket error:', error);
+    restartPm2()
 });
+
+
+const restartPm2 = async() => {
+    pm2.connect((err) => {
+        if (err) {
+            console.error('Error connecting to PM2:', err);
+            process.exit(1);
+        }
+        pm2.restart('trx', (err, proc) => {
+            if (err) {
+                console.error('Error restarting process:', err);
+                pm2.disconnect();
+                process.exit(1);
+            }
+            console.log('Process restarted successfully:', proc);
+            pm2.disconnect();
+        });
+    });
+}
