@@ -4,6 +4,7 @@ const { ObjectId } = require('mongodb');
 const Transaction = require('../models/Transaction')
 const Contract = require('../models/Contract')
 const Volume = require('../models/Volume')
+const new_token = require('../models/new_token')
 const get_transaction = async(req, res) => {
     try{
         console.log(req.body)
@@ -151,9 +152,26 @@ const delete_contract = async(req, res) => {
     }
 }
 
+const getNew_token = async(req, res) => {
+    try{
+        let{page_number, limit} = req.body
+        let data = await new_token.find().sort({createdAt : -1}).skip((Number(page_number) - 1) * limit).limit(Number(limit))
+        return res.status(200).json({
+            status: 200,
+            data,
+        });
+    }catch(error){
+        return res.status(STATUS_CODE.FORBIDDEN).json({
+            status: "error",
+            message: error,
+        });
+    }
+}
+
 module.exports = {
     get_transaction,
     add_contract,
     get_contract,
-    delete_contract
+    delete_contract,
+    getNew_token
 }

@@ -1,10 +1,10 @@
 const Web3 = require('web3');
 require('../utility/dbConn');
 const pm2 = require('pm2');
-// let abi = require('../assets/Abi/abi.json')
 const Transaction = require('../models/Transaction');
 const Contract = require("../models/Contract");
-let RPCURL = 'wss://eth-mainnet.g.alchemy.com/v2/b_J0rV5-81u-OwjBa-q4dVzAJWwtoS6b'
+let RPCURL = 'wss://eth-mainnet.g.alchemy.com/v2/UHm-FJzBVdJDsvGXJ3HyI39UfLg7J9VA'
+// let RPCURL = "wss://mainnet.infura.io/ws/v3/2b1eac7434014a04b279e24da8abc275"
 const web3 = new Web3(new Web3.providers.WebsocketProvider(RPCURL));
 web3.eth.subscribe('pendingTransactions', (error, transaction) => {
     console.log("transaction", transaction);
@@ -14,8 +14,9 @@ web3.eth.subscribe('pendingTransactions', (error, transaction) => {
                 const contractsObject = await Contract.find();
                 for (const contractObj of contractsObject) {
                     const contractAddress = contractObj.contract_address;
-                    if (transaction.to === contractAddress || transaction.from === contractAddress) {
-                        console.log("transaction", transaction);
+                    // console.log("transaction",transaction)
+                    if (transaction?.to === contractAddress || transaction?.from === contractAddress) {
+                        // console.log("transaction", transaction);
                         const insertObject = {
                             chain_id: transaction?.chainId,
                             to_address: transaction?.to,
@@ -29,6 +30,7 @@ web3.eth.subscribe('pendingTransactions', (error, transaction) => {
                             maxFeePerGas : transaction?.maxFeePerGas
                         };
                         await Transaction.create(insertObject);
+                        console.log("data done ===>>>>")
                     }
                 }
             }
@@ -45,7 +47,6 @@ web3.eth.subscribe('pendingTransactions', (error, transaction) => {
     console.error('WebSocket error:', error);
     restartPm2()
 });
-
 
 const restartPm2 = async() => {
     pm2.connect((err) => {

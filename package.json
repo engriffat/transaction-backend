@@ -23,6 +23,7 @@
         "ethers": "^5.7.2",
         "express": "^4.17.1",
         "express-mongo-sanitize": "^2.2.0",
+        "graphql-request": "^6.1.0",
         "hdkey": "^2.1.0",
         "http": "^0.0.1-security",
         "mongodb": "^5.7.0",

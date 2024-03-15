@@ -16,6 +16,10 @@ const VolumeSchema = new Schema({
     total_supply : {
         type: Number,
         default : 0
+    },
+    circulating_supply : {
+        type: Number,
+        default : 0
     }
 },
 {
