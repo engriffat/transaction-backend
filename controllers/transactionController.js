@@ -9,14 +9,28 @@ const new_token = require('../models/new_token')
 const get_transaction = async(req, res) => {
     try{
         console.log(req.body)
-        let {contract_address, from_date, to_date, limit, page_number} = req.body;
+        let {contract_address, from_date, to_date, limit, page_number, status, hash, from_value, to_value, from_gas, to_gas} = req.body;
         let query = {}
+
+        if(hash){
+            query.transaction_hash = hash;
+        }
+        if(status){
+            query.status = status;
+        }
+        if(from_value && to_value){
+            query['value'] = { $gte: from_value, $lte: to_value};
+        }
+        if(from_gas && to_gas){
+            query['gas'] = { $gte: from_gas, $lte: to_gas};
+        } 
         if(contract_address){
             query = {$or : [{to_address : contract_address}, {from_address : contract_address}]}
         }
         if(from_date && to_date){
             query['createdAt'] = { $gte: new Date(from_date), $lte: new Date(to_date) };
         }
+        console.log("query", query)
         let count = await Transaction.countDocuments(query);
         let transactionData = await Transaction.aggregate([
             {
