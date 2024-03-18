@@ -11,7 +11,6 @@ const get_transaction = async(req, res) => {
         console.log(req.body)
         let {contract_address, from_date, to_date, limit, page_number, status, hash, from_value, to_value, from_gas, to_gas} = req.body;
         let query = {}
-
         if(hash){
             query.transaction_hash = hash;
         }
@@ -169,11 +168,27 @@ const delete_contract = async(req, res) => {
 
 const getNew_token = async(req, res) => {
     try{
-        let{page_number, limit} = req.body
-        let data = await new_token.find().sort({createdAt : -1}).skip((Number(page_number) - 1) * limit).limit(Number(limit))
+        let{page_number, limit, contract_address, form_liquadity, to_liquadity, from_buy_volume, to_buy_volume, from_sell_volume, to_sell_volume} = req.body
+        let query = {}
+        if(contract_address){
+            query.contract_address = contract_address;
+        }
+        if(form_liquadity && to_liquadity){
+            query['value'] = { $gte: form_liquadity, $lte: to_liquadity};
+        }
+        if(from_buy_volume && to_buy_volume){
+            query['value'] = { $gte: from_buy_volume, $lte: to_buy_volume};
+        }
+        if(from_sell_volume && to_sell_volume){
+            query['value'] = { $gte: from_sell_volume, $lte: to_sell_volume};
+        }
+        console.log("query", query)
+        let count = await new_token.countDocuments(query)
+        let data = await new_token.find(query).sort({createdAt : -1}).skip((Number(page_number) - 1) * limit).limit(Number(limit))
         return res.status(200).json({
             status: 200,
             data,
+            count
         });
     }catch(error){
         return res.status(STATUS_CODE.FORBIDDEN).json({
