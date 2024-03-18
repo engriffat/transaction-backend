@@ -5,4 +5,5 @@ module.exports = (app) => {
   app.get("/api/getContract", transactionController.get_contract)
   app.post("/api/deleteContract", transactionController.delete_contract)
   app.post("/api/getNewToken", transactionController.getNew_token)
+  app.post("/api/addTelegtamAlerts", transactionController.addTelegtam_alerts)
 };

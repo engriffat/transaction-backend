@@ -4,6 +4,7 @@ const { ObjectId } = require('mongodb');
 const Transaction = require('../models/Transaction')
 const Contract = require('../models/Contract')
 const Volume = require('../models/Volume')
+const telegram_alert = require('../models/telegram_alert')
 const new_token = require('../models/new_token')
 const get_transaction = async(req, res) => {
     try{
@@ -168,7 +169,30 @@ const getNew_token = async(req, res) => {
     }
 }
 
+const addTelegtam_alerts = async(req, res) => {
+    try{
+        let {field_name, from_value, to_value, contract_address} = req.body
+        let insertObj = {
+            field_name, 
+            from_value, 
+            to_value, 
+            contract_address
+        }
+        await telegram_alert.create(insertObj)
+        return res.status(200).json({
+            status: 200,
+            message: "Successfullt added new alert",
+        });
+    }catch(error){
+        console.log(error)
+        return res.status(STATUS_CODE.FORBIDDEN).json({
+            status: "error",
+            message: error,
+        });
+    }
+}
 module.exports = {
+    addTelegtam_alerts,
     get_transaction,
     add_contract,
     get_contract,
