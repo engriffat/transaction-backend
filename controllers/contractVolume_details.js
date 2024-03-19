@@ -4,19 +4,22 @@ const { ObjectId } = require('mongodb');
 const Transaction = require('../models/Transaction');
 const cron = require("node-cron");
 let abi = require('../assets/Abi/abi.json')
-const { EvmChain } = require("@moralisweb3/common-evm-utils");
 const Moralis = require("moralis").default;
+const { EvmChain } = require("@moralisweb3/common-evm-utils");
+// const Moralis = require("moralis").default;
 const Volume = require('../models/Volume')
+const price = require('../models/price')
 const Contract = require("../models/Contract");
-let MORALIS_API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub25jZSI6IjdiOGJiMWZhLTZjZDQtNGJjNi04OGVjLWRmOWYyNDNlMjUxZiIsIm9yZ0lkIjoiMzY0NzcyIiwidXNlcklkIjoiMzc0ODkzIiwidHlwZSI6IlBST0pFQ1QiLCJ0eXBlSWQiOiJiZjcxZTIwZi0wMWUxLTQzYWItYTBlYi05ZDVlM2NkYzc3NDMiLCJpYXQiOjE3MDczMzkwNjksImV4cCI6NDg2MzA5OTA2OX0.hm3dP6ZVvUUUXz8AmOL9_NroAg-J1qL8IQrppWMU-m8"
+// let MORALIS_API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub25jZSI6IjNhMzBhMzc0LTMzNWQtNDlhOS1hOGE2LWE1OTU5YTk1ZDk5YyIsIm9yZ0lkIjoiMzgzNDcyIiwidXNlcklkIjoiMzk0MDI1IiwidHlwZUlkIjoiMGQwNGM5M2UtOTQ3MC00NDllLWFiMzAtYjMzZGFhOGFkZjRhIiwidHlwZSI6IlBST0pFQ1QiLCJpYXQiOjE3MTA4MjgwODcsImV4cCI6NDg2NjU4ODA4N30.CaI_31xDwSUM_I_gvj543VPqWy_jV_7b_BBg2dQZ0tc"
 const web3 = new Web3('https://mainnet.infura.io/v3/85db29381d6d4e41af9122334af396b2');
 const { request, gql } = require('graphql-request');
 const UNISWAP_GRAPHQL_ENDPOINT = 'https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v2';
-cron.schedule("*/10 * * * * *", async function () {
+// let MORALIS_API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub25jZSI6IjNhMzBhMzc0LTMzNWQtNDlhOS1hOGE2LWE1OTU5YTk1ZDk5YyIsIm9yZ0lkIjoiMzgzNDcyIiwidXNlcklkIjoiMzk0MDI1IiwidHlwZUlkIjoiMGQwNGM5M2UtOTQ3MC00NDllLWFiMzAtYjMzZGFhOGFkZjRhIiwidHlwZSI6IlBST0pFQ1QiLCJpYXQiOjE3MTA4MjgwODcsImV4cCI6NDg2NjU4ODA4N30.CaI_31xDwSUM_I_gvj543VPqWy_jV_7b_BBg2dQZ0tc"
+cron.schedule("0 0 */10 * * *", async function () {
     try{
-      await Moralis.start({
-        apiKey: MORALIS_API_KEY
-        });
+      // await Moralis.start({
+      //   apiKey: MORALIS_API_KEY
+      // });
       const contractsObject = await Contract.find();
       for (const contractObj of contractsObject) {
         const contractAddress = '0xbadff0ef41d2a68f22de21eabca8a59aaf495cf0'
@@ -61,7 +64,7 @@ cron.schedule("*/10 * * * * *", async function () {
     }
 });
 
-cron.schedule("*/10 * * * * *", async function () {
+cron.schedule("*/20 * * * * *", async function () {
     try{
       console.log("Transaction confirmation cron is running......");
       let orders = await Transaction.find({status : "pending"})
@@ -72,8 +75,16 @@ cron.schedule("*/10 * * * * *", async function () {
           web3.eth.getTransactionReceipt(trxhash)
           .then(async receipt => {
             if (receipt) {
+              console.log("receipt", receipt)
               if (receipt.status) {
-                await Transaction.updateOne({_id : new ObjectId(order_id)}, {$set : {status : "completed"}})
+                let priceEth = await price.findOne({symbol : "ETH"})
+                let gasUsed = (receipt?.gasUsed) ? (receipt.gasUsed) : 0;
+                let effGasPrice = (receipt?.effectiveGasPrice) ? (receipt.effectiveGasPrice) : 0;
+                const gasCostWei = gasUsed * effGasPrice;
+                const gasCostEth = (gasCostWei > 0) ? gasCostWei/ 10**18 : 0;
+                let convertGasIntoDollar = (gasCostEth > 0) ? (gasCostEth * priceEth.price) : 0
+                console.log("convertGasIntoDollar", convertGasIntoDollar)
+                await Transaction.updateOne({_id : new ObjectId(order_id)}, {$set : {status : "confirmed", gas : convertGasIntoDollar}})
               } else {
                 await Transaction.deleteOne({_id : new ObjectId(order_id)})
               }
@@ -97,3 +108,24 @@ cron.schedule("*/10 * * * * *", async function () {
       });
     }
 });
+
+cron.schedule("0 */30 * * * *", async function () {
+  try{
+    console.log("price crone is working =================>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+    const response = await Moralis.EvmApi.token.getTokenPrice({
+      "chain": "0x1",
+      "include": "percent_change",
+      "address": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
+    });
+    if(response.raw){
+      let priceUSD = response.raw.usdPrice
+      console.log("usdt price", priceUSD);
+      if(priceUSD > 0){
+        await price.updateOne({symbol : "ETH"}, {$set : {price : priceUSD}}, {upsert : true})
+      }
+    }
+  }catch(error){
+    console.error(error)
+  }
+});
+

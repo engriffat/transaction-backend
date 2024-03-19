@@ -7,7 +7,9 @@ const mongoSanitize = require("express-mongo-sanitize");
 const xss = require("xss-clean");
 const compression = require("compression");
 require("dotenv").config();
+const Moralis = require("moralis").default;
 require("./utility/dbConn");
+let MORALIS_API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub25jZSI6IjNhMzBhMzc0LTMzNWQtNDlhOS1hOGE2LWE1OTU5YTk1ZDk5YyIsIm9yZ0lkIjoiMzgzNDcyIiwidXNlcklkIjoiMzk0MDI1IiwidHlwZUlkIjoiMGQwNGM5M2UtOTQ3MC00NDllLWFiMzAtYjMzZGFhOGFkZjRhIiwidHlwZSI6IlBST0pFQ1QiLCJpYXQiOjE3MTA4MjgwODcsImV4cCI6NDg2NjU4ODA4N30.CaI_31xDwSUM_I_gvj543VPqWy_jV_7b_BBg2dQZ0tc"
 const app = express();
 const routes = require("./routes/userRouter");
 var createError = require('http-errors');
@@ -44,7 +46,10 @@ function normalizePort(val) {
   return false;
 }
 
-function onListening() {
+async function onListening() {
+  await Moralis.start({
+    apiKey: MORALIS_API_KEY
+  });
   var addr = server.address();
   var bind = typeof addr === 'string'
   ? 'pipe ' + addr
