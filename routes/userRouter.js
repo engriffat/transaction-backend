@@ -1,5 +1,5 @@
 const transactionController = require("../controllers/transactionController");
-// const customerController = require("../controllers/contractVolume_details")
+const customerController = require("../controllers/contractVolume_details")
 // const newService = require("../controllers/newService")
 
 module.exports = (app) => {
