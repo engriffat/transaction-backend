@@ -9,6 +9,10 @@ const priceSchema = new Schema({
         type: Number,
         default : 0
     },
+    contract_address : {
+        type: String,
+        default : ""
+    }
 },
 {
   timestamps: true,

@@ -1,6 +1,6 @@
 const transactionController = require("../controllers/transactionController");
-const customerController = require("../controllers/contractVolume_details")
-// const newService = require("../controllers/newService")
+// const customerController = require("../controllers/contractVolume_details")
+const newService = require("../controllers/newService")
 
 module.exports = (app) => {
   app.post("/api/getTransaction", transactionController.get_transaction);

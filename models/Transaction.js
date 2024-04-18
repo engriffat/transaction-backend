@@ -40,6 +40,18 @@ const transactionSchema = new Schema({
     type : {
         type : String,
         default : ""
+    },
+    name : {
+        type : String,
+        default : ""
+    },
+    logo : {
+        type : String,
+        default : ""
+    },
+    symbol : {
+        type : String,
+        default : ""
     }
 },
 {

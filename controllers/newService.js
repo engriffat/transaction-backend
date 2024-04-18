@@ -5,8 +5,8 @@ const Transaction = require('../models/Transaction');
 const Contract = require("../models/Contract");
 let price = require('../models/price')
 let MORALIS_API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub25jZSI6IjNhMzBhMzc0LTMzNWQtNDlhOS1hOGE2LWE1OTU5YTk1ZDk5YyIsIm9yZ0lkIjoiMzgzNDcyIiwidXNlcklkIjoiMzk0MDI1IiwidHlwZUlkIjoiMGQwNGM5M2UtOTQ3MC00NDllLWFiMzAtYjMzZGFhOGFkZjRhIiwidHlwZSI6IlBST0pFQ1QiLCJpYXQiOjE3MTA4MjgwODcsImV4cCI6NDg2NjU4ODA4N30.CaI_31xDwSUM_I_gvj543VPqWy_jV_7b_BBg2dQZ0tc"
-let RPCURL = 'wss://eth-mainnet.g.alchemy.com/v2/UHm-FJzBVdJDsvGXJ3HyI39UfLg7J9VA'
-// let RPCURL = "wss://mainnet.infura.io/ws/v3/2b1eac7434014a04b279e24da8abc275"
+// let RPCURL = 'wss://eth-mainnet.g.alchemy.com/v2/UHm-FJzBVdJDsvGXJ3HyI39UfLg7J9VA'
+let RPCURL = "ws://localhost:8551"
 const web3 = new Web3(new Web3.providers.WebsocketProvider(RPCURL));
 web3.eth.subscribe('pendingTransactions', (error, transaction) => {
     console.log("transaction", transaction);
