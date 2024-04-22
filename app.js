@@ -5,6 +5,7 @@ const { ObjectId } = require('mongodb');
 const session = require("cookie-session");
 const mongoSanitize = require("express-mongo-sanitize");
 const xss = require("xss-clean");
+const new_token = require("./models/new_token")
 const compression = require("compression");
 require("dotenv").config();
 const Moralis = require("moralis").default;
@@ -57,3 +58,22 @@ async function onListening() {
   console.log(`Server is running on port ${port}`)
   debug('Listening on ' + bind);
 }
+
+io.on('connection', (socket) => {
+  console.log('a user connected');
+  socket.on('getTokens', async(objectData) => {
+    try {
+      console.log("objectData ====>>>>>>>>>", objectData)
+      let limit = objectData.limit
+      let page_number = objectData.page_number
+      let tokens  = await new_token.find({}).sort({createdAt : -1}).skip((page_number - 1) * limit).limit(limit)
+      const userSocketId = socket.id;
+      io.to(userSocketId).emit('tokensData', tokens);
+    }catch (e) {
+      console.log("e===>>>>>>>", e)
+    }
+  });
+  socket.on('disconnect', async() => {
+    console.log('disconnected user')
+  });
+});

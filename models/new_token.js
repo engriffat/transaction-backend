@@ -6,8 +6,8 @@ const new_tokens = new Schema({
         default : ""
     },
     liquidity: {
-        type: Number,
-        default : 0
+        type: [],
+        default : []
     },
     number_of_buyer: {
         type: Number,
@@ -33,10 +33,93 @@ const new_tokens = new Schema({
         type: String,
         default : ""
     },
+    status : {
+        type : "string",
+        default : "pending"
+    },
     price: {
         type: Number,
         default : 0
     },
+    symbol : {
+        type: String,
+        default : ""
+    },
+    totalSupply : {
+        type: Number,
+        default : 0
+    },
+    ownerAddress : {
+        type: String,
+        default : ""
+    },
+    ownerBalance : {
+        type: Number,
+        default : 0
+    },
+    creatorAddress : {
+        type: String,
+        default : ""
+    },
+    creatorBalance  : {
+        type: Number,
+        default : 0
+    },
+    currentPriceUsd : {
+        type: Number,
+        default : 0
+    },
+    exchangabilityChecks : {
+        type: [],
+        default : []
+    },
+    currentLiquidity : {
+        type: [],
+        default : []
+    },
+    holdersChecks : {
+        type: [],
+        default : []
+    },
+    liquidityChecks : {
+        type: [],
+        default : []
+    },
+    totalLiquidityPercentageLocked : {
+        type: [],
+        default : []
+    },
+    ownershipChecks : {
+        type: [],
+        default : []
+    },
+    otherChecks : {
+        type: [],
+        default : []
+    },
+    honeypotDetails: { 
+        type: [],
+        default : []
+    },  
+    txns : {
+        type: [],
+        default : []
+    },
+    volume : {
+        type: [],
+        default : []
+    },
+    priceChange : {
+        type: [],
+        default : []
+    },
+    priceChange : {
+        type: [],
+        default : []
+    },
+    lat_update_time : {
+        type : Date,
+    }
 },
 {
   timestamps: true,

@@ -5,11 +5,15 @@ const Transaction = require('../models/Transaction');
 const cron = require("node-cron");
 let abi = require('../assets/Abi/abi.json')
 const Moralis = require("moralis").default;
+const axios = require('axios');
+const new_token = require('../models/new_token')
 const { EvmChain } = require("@moralisweb3/common-evm-utils");
 // const Moralis = require("moralis").default;
 const Volume = require('../models/Volume')
 const price = require('../models/price')
+const IUniswapV2Pair = require('@uniswap/v2-core/build/IUniswapV2Pair.json')
 const Contract = require("../models/Contract");
+const tokenVerification = require('../utility/tokenVerificationUtils')
 // let MORALIS_API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub25jZSI6IjNhMzBhMzc0LTMzNWQtNDlhOS1hOGE2LWE1OTU5YTk1ZDk5YyIsIm9yZ0lkIjoiMzgzNDcyIiwidXNlcklkIjoiMzk0MDI1IiwidHlwZUlkIjoiMGQwNGM5M2UtOTQ3MC00NDllLWFiMzAtYjMzZGFhOGFkZjRhIiwidHlwZSI6IlBST0pFQ1QiLCJpYXQiOjE3MTA4MjgwODcsImV4cCI6NDg2NjU4ODA4N30.CaI_31xDwSUM_I_gvj543VPqWy_jV_7b_BBg2dQZ0tc"
 const web3 = new Web3('https://mainnet.infura.io/v3/85db29381d6d4e41af9122334af396b2');
 // const web3 = new Web3('http://18.205.38.205:8545');
@@ -186,4 +190,78 @@ cron.schedule("0 0 */20 * * *", async function () {
   }catch(error){
     console.error(error)
   }
+});
+
+//token honey pot service
+cron.schedule("*/5 * * * * *", async function () {
+    let currentTime = new Date();
+    const tenMinutesAgo = new Date(currentTime.getTime() - (10 * 60 * 1000));
+    let tokens = await new_token.find({ $or : [{lat_update_time : {$exists: false}}, {lat_update_time : {$lte : tenMinutesAgo}}]}).limit(5);
+    console.log("tokens", tokens.length)
+    if(tokens.length > 0){
+      for(let token= 0; token < tokens.length; token++){
+        let contract_address = tokens[token].contract_address
+        console.log("contract_address", contract_address)
+        let tokenId = tokens[token]._id.toString()
+        let symbol = tokens[token].symbol
+        try{
+          let config = {
+            method: 'get',
+            maxBodyLength: Infinity,
+            url: `https://quillcheck-api.quillaudits.com/api/v1/tokens/information/${contract_address}?1`,
+            headers: { 
+              'x-api-key': ''
+            }
+          };
+          let response = await axios.request(config)
+          console.log("response", response.data)
+          let insertObject = {
+            liquidity: "",
+            number_of_buyer: "", 
+            number_of_seller: "", 
+            buy_volume: "", 
+            sell_volume : "", 
+            market_cap : "", 
+            status : "success",
+            totalSupply : "",
+            ownerAddress : "",
+            ownerBalance : "",
+            creatorAddress : "",
+            creatorBalance  : "",
+            currentPriceUsd : "",
+            exchangabilityChecks : "",
+            currentLiquidity : "",
+            holdersChecks : "",
+            liquidityChecks : "",
+            totalLiquidityPercentageLocked : "",
+            ownershipChecks : "",
+            otherChecks : "",
+            honeypotDetails: "",
+            lat_update_time : new Date()
+          }
+          await new_token.updateOne({_id : new ObjectId(tokenId)}, {$set : insertObject});
+          if(symbol){
+            const url = 'https://api.dexscreener.com/latest/dex/search';
+            const params = {
+              q: symbol,
+            };
+            let response = await axios.get(url)
+            console.log("response", response.data)
+            // get data against pair addrss
+            let updateObject = {
+              txns : "",
+              volume : "",
+              liquidity : "",
+              priceChange : ""
+            }
+            await new_token.updateOne({_id : new ObjectId(tokenId)}, {$set : updateObject});
+          }
+        }catch(error){
+          console.error(error.response.data)
+          await new_token.updateOne({_id : new ObjectId(tokenId)}, {$set : {lat_update_time : new Date()}});
+        }
+      }//end loop
+    }else {
+      console.log("No pending tokens")
+    }
 });
