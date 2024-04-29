@@ -66,9 +66,10 @@ io.on('connection', (socket) => {
       console.log("objectData ====>>>>>>>>>", objectData)
       let limit = objectData.limit
       let page_number = objectData.page_number
+      let count  = await new_token.countDocuments({})
       let tokens  = await new_token.find({}).sort({createdAt : -1}).skip((page_number - 1) * limit).limit(limit)
       const userSocketId = socket.id;
-      io.to(userSocketId).emit('tokensData', tokens);
+      io.to(userSocketId).emit('tokensData', {tokens, count});
     }catch (e) {
       console.log("e===>>>>>>>", e)
     }
