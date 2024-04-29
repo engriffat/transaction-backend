@@ -193,7 +193,7 @@ cron.schedule("0 0 */20 * * *", async function () {
 });
 
 //token honey pot service
-cron.schedule("*/5 * * * * *", async function () {
+cron.schedule("*/10 * * * * *", async function () {
     let currentTime = new Date();
     const tenMinutesAgo = new Date(currentTime.getTime() - (10 * 60 * 1000));
     let tokens = await new_token.find({ $or : [{lat_update_time : {$exists: false}}, {lat_update_time : {$lte : tenMinutesAgo}}]}).limit(5);
@@ -210,7 +210,7 @@ cron.schedule("*/5 * * * * *", async function () {
             maxBodyLength: Infinity,
             url: `https://quillcheck-api.quillaudits.com/api/v1/tokens/information/${contract_address}?1`,
             headers: { 
-              'x-api-key': ''
+              'x-api-key': process.env.quillCheck
             }
           };
           let response = await axios.request(config)
