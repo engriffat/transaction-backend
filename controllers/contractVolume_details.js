@@ -195,15 +195,13 @@ cron.schedule("0 0 */20 * * *", async function () {
 //token honey pot service
 cron.schedule("*/10 * * * * *", async function () {
     let currentTime = new Date();
-    const tenMinutesAgo = new Date(currentTime.getTime() - (10 * 60 * 1000));
+    const tenMinutesAgo = new Date(currentTime.getTime() - (30 * 60 * 1000));
     let tokens = await new_token.find({ $or : [{lat_update_time : {$exists: false}}, {lat_update_time : {$lte : tenMinutesAgo}}]}).limit(5);
-    console.log("tokens", tokens.length)
     if(tokens.length > 0){
       for(let token= 0; token < tokens.length; token++){
         let contract_address = tokens[token].contract_address
         console.log("contract_address", contract_address)
         let tokenId = tokens[token]._id.toString()
-        let symbol = tokens[token].symbol
         try{
           let config = {
             method: 'get',
@@ -214,50 +212,51 @@ cron.schedule("*/10 * * * * *", async function () {
             }
           };
           let response = await axios.request(config)
-          console.log("response", response.data)
+          let symbol = response.data.tokenInformation.tokenSymbol
+          // console.log("response", response.data)
           let insertObject = {
-            liquidity: "",
-            number_of_buyer: "", 
-            number_of_seller: "", 
-            buy_volume: "", 
-            sell_volume : "", 
-            market_cap : "", 
-            status : "success",
-            totalSupply : "",
-            ownerAddress : "",
-            ownerBalance : "",
-            creatorAddress : "",
-            creatorBalance  : "",
-            currentPriceUsd : "",
-            exchangabilityChecks : "",
-            currentLiquidity : "",
-            holdersChecks : "",
-            liquidityChecks : "",
+            // liquidity: "",
+            // number_of_buyer: "", 
+            // number_of_seller: "", 
+            // buy_volume: "", 
+            // sell_volume : "", 
+            // market_cap : "", 
+            // status : "success",
+            // totalSupply : "",
+            // exchangabilityChecks : "",
+            // currentLiquidity : "",
             totalLiquidityPercentageLocked : "",
-            ownershipChecks : "",
-            otherChecks : "",
-            honeypotDetails: "",
+            holdersChecks : response.data.marketChecks.holdersChecks,
+            ownerAddress : response.data.tokenInformation.ownerAddress,
+            ownerBalance : response.data.tokenInformation.ownerBalance,
+            creatorAddress : response.data.tokenInformation.creatorAddress,
+            creatorBalance  : response.data.tokenInformation.creatorBalance,
+            currentPriceUsd : response.data.tokenInformation.marketData.currentPriceUsd,
+            liquidityChecks : response.data.codeChecks.liquidityChecks,
+            ownershipChecks : response.data.codeChecks.ownershipChecks,
+            otherChecks : response.data.otherChecks,
+            honeypotDetails: response.data.honeypotDetails,
             lat_update_time : new Date()
           }
           await new_token.updateOne({_id : new ObjectId(tokenId)}, {$set : insertObject});
+          console.log("symbol", symbol)
           if(symbol){
-            const url = 'https://api.dexscreener.com/latest/dex/search';
-            const params = {
-              q: symbol,
-            };
-            let response = await axios.get(url)
-            console.log("response", response.data)
-            // get data against pair addrss
+            const url = `https://api.dexscreener.com/latest/dex/search?q=${symbol}`;
+            let response = await axios.get(url)   
+            let data = response.data.pairs
+            const ethereumPair = data.find(pair => pair.chainId === 'ethereum');
+
+            console.log("ethereumPair", ethereumPair)
             let updateObject = {
-              txns : "",
-              volume : "",
-              liquidity : "",
-              priceChange : ""
+              txns : ethereumPair.txns,
+              volume : ethereumPair.volume,
+              liquidity : ethereumPair.liquidity,
+              priceChange : ethereumPair.priceChange
             }
             await new_token.updateOne({_id : new ObjectId(tokenId)}, {$set : updateObject});
           }
         }catch(error){
-          console.error(error.response.data)
+          console.error(error.response)
           await new_token.updateOne({_id : new ObjectId(tokenId)}, {$set : {lat_update_time : new Date()}});
         }
       }//end loop
