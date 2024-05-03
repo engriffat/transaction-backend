@@ -197,12 +197,26 @@ cron.schedule("*/10 * * * * *", async function () {
     let currentTime = new Date();
     const tenMinutesAgo = new Date(currentTime.getTime() - (30 * 60 * 1000));
     let tokens = await new_token.find({ $or : [{lat_update_time : {$exists: false}}, {lat_update_time : {$lte : tenMinutesAgo}}]}).limit(5);
+    // let tokens = await new_token.find().limit(5);
     if(tokens.length > 0){
       for(let token= 0; token < tokens.length; token++){
         let contract_address = tokens[token].contract_address
         console.log("contract_address", contract_address)
         let tokenId = tokens[token]._id.toString()
         try{
+          let configDexTool = {
+            method: 'get',
+            maxBodyLength: Infinity,
+            url: `https://public-api.dextools.io/advanced/v2/token/ether/${contract_address}/price`,
+            headers: { 
+              'accept': 'application/json',
+              'x-api-key': process.env.dexToolApi//'uoqmkSQeSg6wmFe2GJVb34DKyul1MYbU7yAszcCl'
+            }
+          };
+          let responsePrice = await axios.request(configDexTool)
+          let price = (responsePrice?.data?.data?.price) ? responsePrice.data.data.price : 0
+          await new_token.updateOne({_id : new ObjectId(tokenId)}, {$set : {price : price}})
+          console.log("responsePrice price", price)
           let config = {
             method: 'get',
             maxBodyLength: Infinity,
@@ -213,18 +227,7 @@ cron.schedule("*/10 * * * * *", async function () {
           };
           let response = await axios.request(config)
           let symbol = response.data.tokenInformation.tokenSymbol
-          // console.log("response", response.data)
           let insertObject = {
-            // liquidity: "",
-            // number_of_buyer: "", 
-            // number_of_seller: "", 
-            // buy_volume: "", 
-            // sell_volume : "", 
-            // market_cap : "", 
-            // status : "success",
-            // totalSupply : "",
-            // exchangabilityChecks : "",
-            // currentLiquidity : "",
             totalLiquidityPercentageLocked : "",
             holdersChecks : response.data.marketChecks.holdersChecks,
             ownerAddress : response.data.tokenInformation.ownerAddress,
@@ -239,14 +242,11 @@ cron.schedule("*/10 * * * * *", async function () {
             lat_update_time : new Date()
           }
           await new_token.updateOne({_id : new ObjectId(tokenId)}, {$set : insertObject});
-          console.log("symbol", symbol)
           if(symbol){
             const url = `https://api.dexscreener.com/latest/dex/search?q=${symbol}`;
             let response = await axios.get(url)   
             let data = response.data.pairs
             const ethereumPair = data.find(pair => pair.chainId === 'ethereum');
-
-            console.log("ethereumPair", ethereumPair)
             let updateObject = {
               txns : ethereumPair.txns,
               volume : ethereumPair.volume,
