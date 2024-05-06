@@ -196,8 +196,8 @@ cron.schedule("0 0 */20 * * *", async function () {
 cron.schedule("*/10 * * * * *", async function () {
     let currentTime = new Date();
     const tenMinutesAgo = new Date(currentTime.getTime() - (30 * 60 * 1000));
-    let tokens = await new_token.find({ $or : [{lat_update_time : {$exists: false}}, {lat_update_time : {$lte : tenMinutesAgo}}]}).limit(5);
-    // let tokens = await new_token.find().limit(5);
+    // let tokens = await new_token.find({ $or : [{lat_update_time : {$exists: false}}, {lat_update_time : {$lte : tenMinutesAgo}}]}).limit(5);
+    let tokens = await new_token.find().limit(5);
     if(tokens.length > 0){
       for(let token= 0; token < tokens.length; token++){
         let contract_address = tokens[token].contract_address
@@ -210,7 +210,7 @@ cron.schedule("*/10 * * * * *", async function () {
             url: `https://public-api.dextools.io/advanced/v2/token/ether/${contract_address}/price`,
             headers: { 
               'accept': 'application/json',
-              'x-api-key': process.env.dexToolApi//'uoqmkSQeSg6wmFe2GJVb34DKyul1MYbU7yAszcCl'
+              'x-api-key': process.env.dexToolApi
             }
           };
           let responsePrice = await axios.request(configDexTool)
@@ -226,19 +226,23 @@ cron.schedule("*/10 * * * * *", async function () {
             }
           };
           let response = await axios.request(config)
+          console.log("response", response.data?.marketChecks?.liquidityChecks?.aggregatedInformation?.percentDistributed)
           let symbol = response.data.tokenInformation.tokenSymbol
           let insertObject = {
             totalLiquidityPercentageLocked : "",
-            holdersChecks : response.data.marketChecks.holdersChecks,
-            ownerAddress : response.data.tokenInformation.ownerAddress,
-            ownerBalance : response.data.tokenInformation.ownerBalance,
-            creatorAddress : response.data.tokenInformation.creatorAddress,
-            creatorBalance  : response.data.tokenInformation.creatorBalance,
-            currentPriceUsd : response.data.tokenInformation.marketData.currentPriceUsd,
-            liquidityChecks : response.data.codeChecks.liquidityChecks,
-            ownershipChecks : response.data.codeChecks.ownershipChecks,
-            otherChecks : response.data.otherChecks,
-            honeypotDetails: response.data.honeypotDetails,
+            locked_percentage : response?.data?.marketChecks?.liquidityChecks?.aggregatedInformation?.percentDistributed?.locked?.percent,
+            burn_liquidity : response?.data?.marketChecks?.liquidityChecks?.aggregatedInformation?.percentDistributed?.burnt?.percent,
+            totalSupply: (response?.data?.totalSupply) ? response?.data?.totalSupply : 0 ,
+            holdersChecks : (response?.data?.marketChecks?.holdersChecks) ? response.data.marketChecks.holdersChecks : 0,
+            ownerAddress : (response?.data?.tokenInformation?.ownerAddress)? response.data.tokenInformation.ownerAddress : 0,
+            ownerBalance : (response?.data?.tokenInformation?.ownerBalance) ? response.data.tokenInformation.ownerBalance : 0,
+            creatorAddress : (response?.data?.tokenInformation?.creatorAddress) ? response.data.tokenInformation.creatorAddress : 0,
+            creatorBalance  : (response?.data?.tokenInformation?.creatorBalance) ? response.data.tokenInformation.creatorBalance : 0,
+            currentPriceUsd : (response?.data?.tokenInformation?.marketData?.currentPriceUsd) ? response.data.tokenInformation.marketData.currentPriceUsd : 0,
+            liquidityChecks : (response?.data?.codeChecks?.liquidityChecks) ? response.data.codeChecks.liquidityChecks : 0,
+            ownershipChecks : (response?.data?.codeChecks?.ownershipChecks) ? response.data.codeChecks.ownershipChecks : 0,
+            otherChecks : (response?.data?.otherChecks) ? response.data.otherChecks : 0,
+            honeypotDetails: (response?.data?.honeypotDetails) ? response.data.honeypotDetails : 0,
             lat_update_time : new Date()
           }
           await new_token.updateOne({_id : new ObjectId(tokenId)}, {$set : insertObject});

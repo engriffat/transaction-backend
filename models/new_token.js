@@ -41,6 +41,14 @@ const new_tokens = new Schema({
         type: Number,
         default : 0
     },
+    burn_liquidity : {
+        type: Number,
+        default : 0
+    },
+    locked_percentage  : {
+        type: Number,
+        default : 0
+    },
     symbol : {
         type: String,
         default : ""
