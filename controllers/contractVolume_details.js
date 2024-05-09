@@ -193,11 +193,11 @@ cron.schedule("0 0 */20 * * *", async function () {
 });
 
 //token honey pot service
-cron.schedule("*/10 * * * * *", async function () {
+cron.schedule("0 0 */10 * * *", async function () {
     let currentTime = new Date();
     const tenMinutesAgo = new Date(currentTime.getTime() - (30 * 60 * 1000));
     // let tokens = await new_token.find({ $or : [{lat_update_time : {$exists: false}}, {lat_update_time : {$lte : tenMinutesAgo}}]}).limit(5);
-    let tokens = await new_token.find().limit(5);
+    let tokens = await new_token.find({ contract_address: "0x3132F6d0e7361fb335391C920DF8049830A1534C"});
     if(tokens.length > 0){
       for(let token= 0; token < tokens.length; token++){
         let contract_address = tokens[token].contract_address
@@ -226,13 +226,10 @@ cron.schedule("*/10 * * * * *", async function () {
             }
           };
           let response = await axios.request(config)
-          console.log("response", response.data?.marketChecks?.liquidityChecks?.aggregatedInformation?.percentDistributed)
           let symbol = response.data.tokenInformation.tokenSymbol
           let insertObject = {
-            totalLiquidityPercentageLocked : "",
             locked_percentage : response?.data?.marketChecks?.liquidityChecks?.aggregatedInformation?.percentDistributed?.locked?.percent,
             burn_liquidity : response?.data?.marketChecks?.liquidityChecks?.aggregatedInformation?.percentDistributed?.burnt?.percent,
-            totalSupply: (response?.data?.totalSupply) ? response?.data?.totalSupply : 0 ,
             holdersChecks : (response?.data?.marketChecks?.holdersChecks) ? response.data.marketChecks.holdersChecks : 0,
             ownerAddress : (response?.data?.tokenInformation?.ownerAddress)? response.data.tokenInformation.ownerAddress : 0,
             ownerBalance : (response?.data?.tokenInformation?.ownerBalance) ? response.data.tokenInformation.ownerBalance : 0,
@@ -249,6 +246,7 @@ cron.schedule("*/10 * * * * *", async function () {
           if(symbol){
             const url = `https://api.dexscreener.com/latest/dex/search?q=${symbol}`;
             let response = await axios.get(url)   
+            console.log("response", response.data)
             let data = response.data.pairs
             const ethereumPair = data.find(pair => pair.chainId === 'ethereum');
             let updateObject = {
@@ -260,7 +258,7 @@ cron.schedule("*/10 * * * * *", async function () {
             await new_token.updateOne({_id : new ObjectId(tokenId)}, {$set : updateObject});
           }
         }catch(error){
-          console.error(error.response)
+          console.error(error.response.data.message)
           await new_token.updateOne({_id : new ObjectId(tokenId)}, {$set : {lat_update_time : new Date()}});
         }
       }//end loop
@@ -268,3 +266,91 @@ cron.schedule("*/10 * * * * *", async function () {
       console.log("No pending tokens")
     }
 });
+
+
+
+
+
+
+
+
+cron.schedule("*/10 * * * * *", async function(){
+  try{
+    let currentTime = new Date();
+    const tenMinutesAgo = new Date(currentTime.getTime() - (30 * 60 * 1000));
+    // let tokens = await new_token.find({ $or : [{lat_update_time : {$exists: false}}, {lat_update_time : {$lte : tenMinutesAgo}}]}).limit(5);
+    let tokens = await new_token.find({ contract_address: "0x3132F6d0e7361fb335391C920DF8049830A1534C"});
+    if(tokens.length > 0){
+      for(let token= 0; token < tokens.length; token++){
+        let contract_address = tokens[token].contract_address
+        console.log("contract_address", contract_address)
+        let tokenId = tokens[token]._id.toString()
+        let pair_address = tokens[token].pair_address
+        let configDexTool = {
+          method: 'get',
+          url: `https://public-api.dextools.io/advanced/v2/pool/ether/${pair_address}/liquidity`,
+          headers: { 
+            'accept': 'application/json',
+            'x-api-key': process.env.dexToolApi
+          }
+        };
+        let responseLiquadity = await axios.request(configDexTool)
+        console.log("liquaditiy", responseLiquadity.data.data.liquidity)
+        if(responseLiquadity?.data?.data?.liquidity){
+          await new_token.updateOne({_id : new ObjectId(tokenId)}, {$set : {totalLiquidityPercentageLocked : responseLiquadity.data.data.liquidity}});
+        }
+        let configDextoken = {
+          method: 'get',
+          url: `https://public-api.dextools.io/advanced/v2/token/ether/${contract_address}/info`,
+          headers: { 
+            'accept': 'application/json',
+            'x-api-key': process.env.dexToolApi
+          }
+        };
+        let responseToken = await axios.request(configDextoken)
+        console.log("total supply", responseToken.data.data.totalSupply)
+        if(responseToken?.data?.data?.totalSupply){
+          await new_token.updateOne({_id : new ObjectId(tokenId)}, {$set : {totalSupply : responseToken.data.data.totalSupply}});
+        }
+        let configPrice = {
+          method: 'get',
+          maxBodyLength: Infinity,
+          url: `https://public-api.dextools.io/advanced/v2/token/ether/${contract_address}/price`,
+          headers: { 
+            'accept': 'application/json',
+            'x-api-key': process.env.dexToolApi
+          }
+        };
+        let responsePrice = await axios.request(configPrice)
+        let price = (responsePrice?.data?.data?.price) ? responsePrice.data.data.price : 0
+        await new_token.updateOne({_id : new ObjectId(tokenId)}, {$set : {price : price}})
+
+        //curl -X GET "https://public-api.dextools.io/advanced/v2/token/ether/0x38bF5eFfe276A11565222a15C7721A9ccB2f77F6/pools?sort=creationTime&order=desc&from=2023-10-01T00%3A00%3A00.000Z&to=2024-11-01T00%3A00%3A00.000Z" \
+        //  -H "accept: application/json"\
+        //  -H "x-api-key: uoqmkSQeSg6wmFe2GJVb34DKyul1MYbU7yAszcCl" 
+      }
+    }
+
+    
+
+
+    // const url = '';
+    // const headers = {
+    //   'accept': 'application/json',
+      
+    // };
+    // axios.get(url, { headers })
+    //     .then(response => {
+    //       console.log(response.data);
+    //     })
+    //     .catch(error => {
+    //   console.error('Error:', error.message);
+    // });
+
+  }catch(error){
+    console.error("error ===>>>>>", error)
+  }
+})
+
+
+
