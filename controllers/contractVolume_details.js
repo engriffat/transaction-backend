@@ -228,7 +228,6 @@ cron.schedule("0 0 */10 * * *", async function () {
           let response = await axios.request(config)
           let symbol = response.data.tokenInformation.tokenSymbol
           let insertObject = {
-            locked_percentage : response?.data?.marketChecks?.liquidityChecks?.aggregatedInformation?.percentDistributed?.locked?.percent,
             burn_liquidity : response?.data?.marketChecks?.liquidityChecks?.aggregatedInformation?.percentDistributed?.burnt?.percent,
             holdersChecks : (response?.data?.marketChecks?.holdersChecks) ? response.data.marketChecks.holdersChecks : 0,
             ownerAddress : (response?.data?.tokenInformation?.ownerAddress)? response.data.tokenInformation.ownerAddress : 0,
@@ -324,28 +323,21 @@ cron.schedule("*/10 * * * * *", async function(){
         let responsePrice = await axios.request(configPrice)
         let price = (responsePrice?.data?.data?.price) ? responsePrice.data.data.price : 0
         await new_token.updateOne({_id : new ObjectId(tokenId)}, {$set : {price : price}})
-
-
         let configLiquidity = {
           method: 'get',
           maxBodyLength: Infinity,
-          url: `https://public-api.dextools.io/advanced/v2/token/ether/${contract_address}/price`,
+          url: `https://public-api.dextools.io/advanced/v2/pool/ether/${pair_address}/locks`,
           headers: { 
             'accept': 'application/json',
             'x-api-key': process.env.dexToolApi
           }
         };
-
-
-
-
-
-
-
-
-        //curl -X GET "https://public-api.dextools.io/advanced/v2/token/ether/0x38bF5eFfe276A11565222a15C7721A9ccB2f77F6/pools?sort=creationTime&order=desc&from=2023-10-01T00%3A00%3A00.000Z&to=2024-11-01T00%3A00%3A00.000Z" \
-        //  -H "accept: application/json"\
-        //  -H "x-api-key: uoqmkSQeSg6wmFe2GJVb34DKyul1MYbU7yAszcCl" 
+        let data = await axios.request(configLiquidity)
+        let update = {
+          locked_percentage: (data?.data?.data?.amountLocked) ? data.data.data.amountLocked : 0,
+          unlockDate : (data?.data?.data?.nextUnlock?.unlockDate) ? data.data.data.nextUnlock.unlockDate : ""
+        }
+        await new_token.updateOne({_id : new ObjectId(tokenId)}, {$set : update});
       }
     }
   }catch(error){

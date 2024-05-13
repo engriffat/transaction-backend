@@ -13,6 +13,9 @@ const new_tokens = new Schema({
         type: Number,
         default : 0
     },
+    unlockDate : {
+        type : Date,
+    },
     number_of_seller: {
         type: Number,
         default : 0
