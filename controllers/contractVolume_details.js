@@ -193,7 +193,8 @@ cron.schedule("0 0 */20 * * *", async function () {
 });
 
 //token honey pot service
-cron.schedule("0 0 */10 * * *", async function () {
+cron.schedule("0 */10 * * * *", async function () {
+  console.log("Quill check api working now ===>>>>>")
     let currentTime = new Date();
     const tenMinutesAgo = new Date(currentTime.getTime() - (30 * 60 * 1000));
     let tokens = await new_token.find({ $or : [{lat_update_time : {$exists: false}}, {lat_update_time : {$lte : tenMinutesAgo}}]}).limit(5);
@@ -216,7 +217,7 @@ cron.schedule("0 0 */10 * * *", async function () {
           let responsePrice = await axios.request(configDexTool)
           let price = (responsePrice?.data?.data?.price) ? responsePrice.data.data.price : 0
           await new_token.updateOne({_id : new ObjectId(tokenId)}, {$set : {price : price}})
-          console.log("responsePrice price", price)
+          // console.log("responsePrice price", price)
           let config = {
             method: 'get',
             maxBodyLength: Infinity,
@@ -245,7 +246,7 @@ cron.schedule("0 0 */10 * * *", async function () {
           if(symbol){
             const url = `https://api.dexscreener.com/latest/dex/search?q=${symbol}`;
             let response = await axios.get(url)   
-            console.log("response", response.data)
+            // console.log("response", response.data)
             let data = response.data.pairs
             const ethereumPair = data.find(pair => pair.chainId === 'ethereum');
             let updateObject = {
@@ -266,14 +267,7 @@ cron.schedule("0 0 */10 * * *", async function () {
     }
 });
 
-
-
-
-
-
-
-
-cron.schedule("*/10 * * * * *", async function(){
+cron.schedule("0 */10 * * * *", async function(){
   try{
     let currentTime = new Date();
     const tenMinutesAgo = new Date(currentTime.getTime() - (30 * 60 * 1000));
