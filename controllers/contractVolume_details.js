@@ -8,7 +8,6 @@ const Moralis = require("moralis").default;
 const axios = require('axios');
 const new_token = require('../models/new_token')
 const { EvmChain } = require("@moralisweb3/common-evm-utils");
-// const Moralis = require("moralis").default;
 const Volume = require('../models/Volume')
 const price = require('../models/price')
 const IUniswapV2Pair = require('@uniswap/v2-core/build/IUniswapV2Pair.json')
