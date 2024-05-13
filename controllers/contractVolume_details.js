@@ -325,28 +325,29 @@ cron.schedule("*/10 * * * * *", async function(){
         let price = (responsePrice?.data?.data?.price) ? responsePrice.data.data.price : 0
         await new_token.updateOne({_id : new ObjectId(tokenId)}, {$set : {price : price}})
 
+
+        let configLiquidity = {
+          method: 'get',
+          maxBodyLength: Infinity,
+          url: `https://public-api.dextools.io/advanced/v2/token/ether/${contract_address}/price`,
+          headers: { 
+            'accept': 'application/json',
+            'x-api-key': process.env.dexToolApi
+          }
+        };
+
+
+
+
+
+
+
+
         //curl -X GET "https://public-api.dextools.io/advanced/v2/token/ether/0x38bF5eFfe276A11565222a15C7721A9ccB2f77F6/pools?sort=creationTime&order=desc&from=2023-10-01T00%3A00%3A00.000Z&to=2024-11-01T00%3A00%3A00.000Z" \
         //  -H "accept: application/json"\
         //  -H "x-api-key: uoqmkSQeSg6wmFe2GJVb34DKyul1MYbU7yAszcCl" 
       }
     }
-
-    
-
-
-    // const url = '';
-    // const headers = {
-    //   'accept': 'application/json',
-      
-    // };
-    // axios.get(url, { headers })
-    //     .then(response => {
-    //       console.log(response.data);
-    //     })
-    //     .catch(error => {
-    //   console.error('Error:', error.message);
-    // });
-
   }catch(error){
     console.error("error ===>>>>>", error)
   }
