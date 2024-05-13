@@ -196,8 +196,8 @@ cron.schedule("0 0 */20 * * *", async function () {
 cron.schedule("0 0 */10 * * *", async function () {
     let currentTime = new Date();
     const tenMinutesAgo = new Date(currentTime.getTime() - (30 * 60 * 1000));
-    // let tokens = await new_token.find({ $or : [{lat_update_time : {$exists: false}}, {lat_update_time : {$lte : tenMinutesAgo}}]}).limit(5);
-    let tokens = await new_token.find({ contract_address: "0x3132F6d0e7361fb335391C920DF8049830A1534C"});
+    let tokens = await new_token.find({ $or : [{lat_update_time : {$exists: false}}, {lat_update_time : {$lte : tenMinutesAgo}}]}).limit(5);
+    // let tokens = await new_token.find({ contract_address: "0x3132F6d0e7361fb335391C920DF8049830A1534C"});
     if(tokens.length > 0){
       for(let token= 0; token < tokens.length; token++){
         let contract_address = tokens[token].contract_address
