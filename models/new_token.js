@@ -85,8 +85,8 @@ const new_tokens = new Schema({
         default : []
     },
     currentLiquidity : {
-        type: [],
-        default : []
+        type: Number,
+        default : 0
     },
     holdersChecks : {
         type: [],
