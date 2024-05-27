@@ -255,8 +255,6 @@ cron.schedule("*/20 * * * * *", async function () {
             }
           };
           let responseLiq = await axios.request(configLiq)
-          console.log("contract address", contract_address)
-          console.log("poolAddress", poolAddress)
           console.log("currentLiquidity", responseLiq?.data?.data?.liquidity)
           let updateLiquadidty = {
             currentLiquidity : (responseLiq?.data?.data?.liquidity) ?  responseLiq.data.data.liquidity : 0
@@ -274,9 +272,11 @@ cron.schedule("*/20 * * * * *", async function () {
             }
           }      
           let lockLiquadidty = await axios.request(lockConfig)
+          console.log("response  ===>>>>", lockLiquadidty.data.data)
+          console.log("poolAddress", poolAddress)
           let updateLockLiquadidty = {
             locked_percentage : lockLiquadidty?.data?.data?.amountLocked ? (lockLiquadidty.data.data.amountLocked) : 0,
-            unlockDate : lockLiquadidty?.data?.data?.nextUnlock ? lockLiquadidty.data.data.nextUnlock : ''
+            unlockDate : lockLiquadidty?.data?.data?.nextUnlock?.unlockDate ? lockLiquadidty.data.data.nextUnlock.unlockDate : ''
           }
           await new_token.updateOne({_id : new ObjectId(tokenId)}, {$set : updateLockLiquadidty});
 
