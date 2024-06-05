@@ -19,7 +19,7 @@ const web3 = new Web3('https://mainnet.infura.io/v3/85db29381d6d4e41af9122334af3
 const { request, gql } = require('graphql-request');
 const UNISWAP_GRAPHQL_ENDPOINT = 'https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v2';
 // let MORALIS_API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub25jZSI6IjNhMzBhMzc0LTMzNWQtNDlhOS1hOGE2LWE1OTU5YTk1ZDk5YyIsIm9yZ0lkIjoiMzgzNDcyIiwidXNlcklkIjoiMzk0MDI1IiwidHlwZUlkIjoiMGQwNGM5M2UtOTQ3MC00NDllLWFiMzAtYjMzZGFhOGFkZjRhIiwidHlwZSI6IlBST0pFQ1QiLCJpYXQiOjE3MTA4MjgwODcsImV4cCI6NDg2NjU4ODA4N30.CaI_31xDwSUM_I_gvj543VPqWy_jV_7b_BBg2dQZ0tc"
-cron.schedule("0 0 */10 * * *", async function () {
+cron.schedule("0 */6 * * * *", async function () {
     try{
       const contractsObject = await Contract.find();
       for (const contractObj of contractsObject) {
@@ -60,7 +60,7 @@ cron.schedule("0 0 */10 * * *", async function () {
     }
 });
 
-cron.schedule("0 0 */10 * * *", async function () {
+cron.schedule("0 */5 * * * *", async function () {
 // cron.schedule("*/20 * * * * *", async function () {
     try{
       console.log("Transaction confirmation cron is running......");
@@ -105,7 +105,7 @@ cron.schedule("0 0 */10 * * *", async function () {
     }
 });
 
-cron.schedule("0 0 */15 * * *", async function () {
+cron.schedule("0 */4 * * * *", async function () {
 // cron.schedule("0 */30 * * * *", async function () {
   try{
     console.log("price crone is working =================>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
@@ -143,7 +143,7 @@ cron.schedule("0 0 */15 * * *", async function () {
   }
 });
 
-cron.schedule("0 0 */20 * * *", async function () {
+cron.schedule("0 */3 * * * *", async function () {
 // cron.schedule("*/20 * * * * *", async function () {
   try{
     let currentDate = new Date()
@@ -192,11 +192,12 @@ cron.schedule("0 0 */20 * * *", async function () {
 });
 
 //token honey pot service
-cron.schedule("*/20 * * * * *", async function () {
+cron.schedule("0 * * * * *", async function () {
   console.log("Quill check api working now ===>>>>>")
     let currentTime = new Date();
     const tenMinutesAgo = new Date(currentTime.getTime() - (30 * 60 * 1000));
     // let tokens = await new_token.find({ $or : [{lat_update_time : {$exists: false}}, {lat_update_time : {$lte : tenMinutesAgo}}]}).limit(5);
+    // let tokens = await new_token.find({contract_address : {$in : [ "0x443459D45c30A03f90037d011CbE22e2183d3b12","0x405154cFAF5Ea4EF57B65b86959c73Dd079FA312","0xBE4D9c8C638B5f0864017d7F6A04b66c42953847","0x3973C606B493EeE0E14B2b5654d5c4049cE9C2d9","0x470c8950C0c3aA4B09654bC73b004615119A44b5","0x6558f69322DB3265fBD64B847D450F5Bfa8c87A5"]}});
     let tokens = await new_token.find({});
     console.log("token lenght: " + tokens.length)
     if(tokens.length > 0){
@@ -255,13 +256,11 @@ cron.schedule("*/20 * * * * *", async function () {
             }
           };
           let responseLiq = await axios.request(configLiq)
-          console.log("currentLiquidity", responseLiq?.data?.data?.liquidity)
           let updateLiquadidty = {
             currentLiquidity : (responseLiq?.data?.data?.liquidity) ?  responseLiq.data.data.liquidity : 0
           }
-          console.log("responseLiq?.data?.data?.liquidity", responseLiq?.data?.data?.liquidity)
+          // console.log("responseLiq?.data?.data?.liquidity", responseLiq?.data?.data?.liquidity)
           await new_token.updateOne({_id : new ObjectId(tokenId)}, {$set : updateLiquadidty});
-
           let lockConfig = {
             method: 'get',
             maxBodyLength: Infinity,
@@ -272,8 +271,7 @@ cron.schedule("*/20 * * * * *", async function () {
             }
           }      
           let lockLiquadidty = await axios.request(lockConfig)
-          console.log("response  ===>>>>", lockLiquadidty.data.data)
-          console.log("poolAddress", poolAddress)
+          console.log("lock liqudidty data  ===>>>>", lockLiquadidty.data.data)
           let updateLockLiquadidty = {
             locked_percentage : lockLiquadidty?.data?.data?.amountLocked ? (lockLiquadidty.data.data.amountLocked) : 0,
             unlockDate : lockLiquadidty?.data?.data?.nextUnlock?.unlockDate ? lockLiquadidty.data.data.nextUnlock.unlockDate : ''
@@ -304,7 +302,7 @@ cron.schedule("*/20 * * * * *", async function () {
     }
 });
 
-cron.schedule("0 0 */2 * * *", async function(){
+cron.schedule("0 */6 * * * *", async function(){
   try{
     let currentTime = new Date();
     const tenMinutesAgo = new Date(currentTime.getTime() - (30 * 60 * 1000));
