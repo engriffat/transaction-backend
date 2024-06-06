@@ -19,7 +19,7 @@ const web3 = new Web3('https://mainnet.infura.io/v3/85db29381d6d4e41af9122334af3
 const { request, gql } = require('graphql-request');
 const UNISWAP_GRAPHQL_ENDPOINT = 'https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v2';
 // let MORALIS_API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub25jZSI6IjNhMzBhMzc0LTMzNWQtNDlhOS1hOGE2LWE1OTU5YTk1ZDk5YyIsIm9yZ0lkIjoiMzgzNDcyIiwidXNlcklkIjoiMzk0MDI1IiwidHlwZUlkIjoiMGQwNGM5M2UtOTQ3MC00NDllLWFiMzAtYjMzZGFhOGFkZjRhIiwidHlwZSI6IlBST0pFQ1QiLCJpYXQiOjE3MTA4MjgwODcsImV4cCI6NDg2NjU4ODA4N30.CaI_31xDwSUM_I_gvj543VPqWy_jV_7b_BBg2dQZ0tc"
-cron.schedule("0 */6 * * * *", async function () {
+cron.schedule("0 */20 * * * *", async function () {
     try{
       const contractsObject = await Contract.find();
       for (const contractObj of contractsObject) {
@@ -60,7 +60,7 @@ cron.schedule("0 */6 * * * *", async function () {
     }
 });
 
-cron.schedule("0 */5 * * * *", async function () {
+cron.schedule("0 */20 * * * *", async function () {
 // cron.schedule("*/20 * * * * *", async function () {
     try{
       console.log("Transaction confirmation cron is running......");
@@ -105,7 +105,7 @@ cron.schedule("0 */5 * * * *", async function () {
     }
 });
 
-cron.schedule("0 */4 * * * *", async function () {
+cron.schedule("0 */16 * * * *", async function () {
 // cron.schedule("0 */30 * * * *", async function () {
   try{
     console.log("price crone is working =================>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
@@ -192,7 +192,7 @@ cron.schedule("0 */3 * * * *", async function () {
 });
 
 //token honey pot service
-cron.schedule("0 * * * * *", async function () {
+cron.schedule("*/10 * * * * *", async function () {
   console.log("Quill check api working now ===>>>>>")
     let currentTime = new Date();
     const tenMinutesAgo = new Date(currentTime.getTime() - (30 * 60 * 1000));
@@ -203,8 +203,10 @@ cron.schedule("0 * * * * *", async function () {
     if(tokens.length > 0){
       for(let token= 0; token < tokens.length; token++){
         console.log("loop ===>>>>", token)
+        console.log("process.env.dexToolApi(", process.env.dexToolApi)
         let contract_address = tokens[token].contract_address
         let poolAddress = tokens[token].pair_address
+        console.log("pool address", poolAddress)
         let tokenId = tokens[token]._id.toString()
         try{
           let configDexTool = {
@@ -213,13 +215,14 @@ cron.schedule("0 * * * * *", async function () {
             url: `https://public-api.dextools.io/advanced/v2/token/ether/${contract_address}/price`,
             headers: { 
               'accept': 'application/json',
-              'x-api-key': process.env.dexToolApi
+              'x-api-key': "XS0flmUsyK6sa2IEpN5Jy6zuyLef5LC1374YsuZc"
             }
           };
           let responsePrice = await axios.request(configDexTool)
+          console.log("responsePrice", responsePrice.data)
           let price = (responsePrice?.data?.data?.price) ? responsePrice.data.data.price : 0
           await new_token.updateOne({_id : new ObjectId(tokenId)}, {$set : {price : price}})
-          // console.log("responsePrice price", price)
+          console.log("responsePrice price", price)
           let config = {
             method: 'get',
             maxBodyLength: Infinity,
@@ -256,6 +259,7 @@ cron.schedule("0 * * * * *", async function () {
             }
           };
           let responseLiq = await axios.request(configLiq)
+          console.log("responseLiq", responseLiq.data)
           let updateLiquadidty = {
             currentLiquidity : (responseLiq?.data?.data?.liquidity) ?  responseLiq.data.data.liquidity : 0
           }
@@ -267,7 +271,7 @@ cron.schedule("0 * * * * *", async function () {
             url :`https://public-api.dextools.io/advanced/v2/pool/ether/${poolAddress}/locks`,
             headers: { 
               'accept': 'application/json',
-              'x-api-key': "L4rrjaDi2f1X50Ih7AENiapq2tvdT2Dj642fyuCh"
+              'x-api-key': process.env.dexToolApi
             }
           }      
           let lockLiquadidty = await axios.request(lockConfig)
@@ -278,20 +282,20 @@ cron.schedule("0 * * * * *", async function () {
           }
           await new_token.updateOne({_id : new ObjectId(tokenId)}, {$set : updateLockLiquadidty});
 
-          // if(symbol){
-          //   const url = `https://api.dexscreener.com/latest/dex/search?q=${symbol}`;
-          //   let response = await axios.get(url)   
-          //   console.log("response", response.data)
-          //   let data = response.data.pairs
-          //   const ethereumPair = data.find(pair => pair.chainId === 'ethereum');
-          //   let updateObject = {
-          //     txns : ethereumPair.txns,
-          //     volume : ethereumPair.volume,
-          //     liquidity : ethereumPair.liquidity,
-          //     priceChange : ethereumPair.priceChange
-          //   }
-          //   await new_token.updateOne({_id : new ObjectId(tokenId)}, {$set : updateObject});
-          // }
+          if(symbol){
+            const url = `https://api.dexscreener.com/latest/dex/search?q=${symbol}`;
+            let response = await axios.get(url)   
+            console.log("response", response.data)
+            let data = response.data.pairs
+            const ethereumPair = data.find(pair => pair.chainId === 'ethereum');
+            let updateObject = {
+              txns : ethereumPair.txns,
+              volume : ethereumPair.volume,
+              liquidity : ethereumPair.liquidity,
+              priceChange : ethereumPair.priceChange
+            }
+            await new_token.updateOne({_id : new ObjectId(tokenId)}, {$set : updateObject});
+          }
         }catch(error){
           console.error("error", error.response.data.message)
           await new_token.updateOne({_id : new ObjectId(tokenId)}, {$set : {lat_update_time : new Date()}});
@@ -302,8 +306,9 @@ cron.schedule("0 * * * * *", async function () {
     }
 });
 
-cron.schedule("0 */6 * * * *", async function(){
+cron.schedule("0 */20 * * * *", async function(){
   try{
+    console.log("New service is running")
     let currentTime = new Date();
     const tenMinutesAgo = new Date(currentTime.getTime() - (30 * 60 * 1000));
     // let tokens = await new_token.find({ $or : [{lat_update_time : {$exists: false}}, {lat_update_time : {$lte : tenMinutesAgo}}]}).limit(5);
@@ -370,7 +375,7 @@ cron.schedule("0 */6 * * * *", async function(){
       }
     }
   }catch(error){
-    console.error("error ===>>>>>", error)
+    console.error("liquadidty error ===>>>>>", error)
   }
 })
 
