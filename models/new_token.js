@@ -130,6 +130,46 @@ const new_tokens = new Schema({
     },
     lat_update_time : {
         type : Date,
+    },
+    volume6h : {
+        type : Number,
+        default : 0
+    },
+    buys6h: {
+        type : Number,
+        default : 0
+    },
+    sells6h: {
+        type : Number,
+        default : 0
+    },
+    sellVolume6h: {
+        type : Number,
+        default : 0
+    },
+    buyVolume6h: {
+        type : Number,
+        default : 0
+    },
+    volume24h: {
+        type : Number,
+        default : 0
+    },
+    buys24h: {
+        type : Number,
+        default : 0
+    },
+    sells24h: {
+        type : Number,
+        default : 0
+    },
+    sellVolume24h: {
+        type : Number,
+        default : 0
+    },
+    buyVolume24h: {
+        type : Number,
+        default : 0
     }
 },
 {

@@ -191,8 +191,8 @@ cron.schedule("0 */3 * * * *", async function () {
   }
 });
 
-//token honey pot service
-cron.schedule("*/10 * * * * *", async function () {
+//token honey pot service working on this only
+cron.schedule("0 */50 * * * *", async function () {
   console.log("Quill check api working now ===>>>>>")
     let currentTime = new Date();
     const tenMinutesAgo = new Date(currentTime.getTime() - (30 * 60 * 1000));
@@ -202,8 +202,8 @@ cron.schedule("*/10 * * * * *", async function () {
     console.log("token lenght: " + tokens.length)
     if(tokens.length > 0){
       for(let token= 0; token < tokens.length; token++){
-        console.log("loop ===>>>>", token)
-        console.log("process.env.dexToolApi(", process.env.dexToolApi)
+        // console.log("loop ===>>>>", token)
+        // console.log("process.env.dexToolApi(", process.env.dexToolApi)
         let contract_address = tokens[token].contract_address
         let poolAddress = tokens[token].pair_address
         console.log("pool address", poolAddress)
@@ -215,51 +215,50 @@ cron.schedule("*/10 * * * * *", async function () {
             url: `https://public-api.dextools.io/advanced/v2/token/ether/${contract_address}/price`,
             headers: { 
               'accept': 'application/json',
-              'x-api-key': "XS0flmUsyK6sa2IEpN5Jy6zuyLef5LC1374YsuZc"
+              'x-api-key': process.env.dexToolApi
             }
           };
           let responsePrice = await axios.request(configDexTool)
-          console.log("responsePrice", responsePrice.data)
+          // console.log("responsePrice", responsePrice.data)
           let price = (responsePrice?.data?.data?.price) ? responsePrice.data.data.price : 0
           await new_token.updateOne({_id : new ObjectId(tokenId)}, {$set : {price : price}})
-          console.log("responsePrice price", price)
-          let config = {
-            method: 'get',
-            maxBodyLength: Infinity,
-            url: `https://quillcheck-api.quillaudits.com/api/v1/tokens/information/${contract_address}?1`,
-            headers: { 
-              'x-api-key': process.env.quillCheck
-            }
-          };
-          let response = await axios.request(config)
-          let symbol = (response?.data?.tokenInformation?.tokenSymbol) ? response.data.tokenInformation.tokenSymbol : ""
-          let insertObject = {
-            burn_liquidity : response?.data?.marketChecks?.liquidityChecks?.aggregatedInformation?.percentDistributed?.burnt?.percent,
-            holdersChecks : (response?.data?.marketChecks?.holdersChecks) ? response.data.marketChecks.holdersChecks : 0,
-            ownerAddress : (response?.data?.tokenInformation?.ownerAddress)? response.data.tokenInformation.ownerAddress : 0,
-            ownerBalance : (response?.data?.tokenInformation?.ownerBalance) ? response.data.tokenInformation.ownerBalance : 0,
-            creatorAddress : (response?.data?.tokenInformation?.creatorAddress) ? response.data.tokenInformation.creatorAddress : 0,
-            creatorBalance  : (response?.data?.tokenInformation?.creatorBalance) ? response.data.tokenInformation.creatorBalance : 0,
-            currentPriceUsd : (response?.data?.tokenInformation?.marketData?.currentPriceUsd) ? response.data.tokenInformation.marketData.currentPriceUsd : 0,
-            liquidityChecks : (response?.data?.codeChecks?.liquidityChecks) ? response.data.codeChecks.liquidityChecks : 0,
-            ownershipChecks : (response?.data?.codeChecks?.ownershipChecks) ? response.data.codeChecks.ownershipChecks : 0,
-            otherChecks : (response?.data?.otherChecks) ? response.data.otherChecks : 0,
-            honeypotDetails: (response?.data?.honeypotDetails) ? response.data.honeypotDetails : 0,
-            lat_update_time : new Date()
-          }
-          await new_token.updateOne({_id : new ObjectId(tokenId)}, {$set : insertObject});
-
+          // console.log("responsePrice price", price)
+          // let config = {
+          //   method: 'get',
+          //   maxBodyLength: Infinity,
+          //   url: `https://quillcheck-api.quillaudits.com/api/v1/tokens/information/${contract_address}?1`,
+          //   headers: { 
+          //     'x-api-key': process.env.quillCheck
+          //   }
+          // };
+          // let response = await axios.request(config)
+          // let symbol = (response?.data?.tokenInformation?.tokenSymbol) ? response.data.tokenInformation.tokenSymbol : ""
+          // let insertObject = {
+          //   burn_liquidity : response?.data?.marketChecks?.liquidityChecks?.aggregatedInformation?.percentDistributed?.burnt?.percent,
+          //   holdersChecks : (response?.data?.marketChecks?.holdersChecks) ? response.data.marketChecks.holdersChecks : 0,
+          //   ownerAddress : (response?.data?.tokenInformation?.ownerAddress)? response.data.tokenInformation.ownerAddress : 0,
+          //   ownerBalance : (response?.data?.tokenInformation?.ownerBalance) ? response.data.tokenInformation.ownerBalance : 0,
+          //   creatorAddress : (response?.data?.tokenInformation?.creatorAddress) ? response.data.tokenInformation.creatorAddress : 0,
+          //   creatorBalance  : (response?.data?.tokenInformation?.creatorBalance) ? response.data.tokenInformation.creatorBalance : 0,
+          //   currentPriceUsd : (response?.data?.tokenInformation?.marketData?.currentPriceUsd) ? response.data.tokenInformation.marketData.currentPriceUsd : 0,
+          //   liquidityChecks : (response?.data?.codeChecks?.liquidityChecks) ? response.data.codeChecks.liquidityChecks : 0,
+          //   ownershipChecks : (response?.data?.codeChecks?.ownershipChecks) ? response.data.codeChecks.ownershipChecks : 0,
+          //   otherChecks : (response?.data?.otherChecks) ? response.data.otherChecks : 0,
+          //   honeypotDetails : (response?.data?.honeypotDetails) ? response.data.honeypotDetails : 0,
+          //   lat_update_time : new Date()
+          // }
+          // await new_token.updateOne({_id : new ObjectId(tokenId)}, {$set : insertObject});
           let configLiq = {
             method: 'get',
             maxBodyLength: Infinity,
             url : `https://public-api.dextools.io/advanced/v2/pool/ether/${poolAddress}/liquidity`,
             headers: { 
               'accept': 'application/json',
-              'x-api-key': "L4rrjaDi2f1X50Ih7AENiapq2tvdT2Dj642fyuCh"
+              'x-api-key': process.env.dexToolApi
             }
           };
           let responseLiq = await axios.request(configLiq)
-          console.log("responseLiq", responseLiq.data)
+          // console.log("responseLiq", responseLiq.data)
           let updateLiquadidty = {
             currentLiquidity : (responseLiq?.data?.data?.liquidity) ?  responseLiq.data.data.liquidity : 0
           }
@@ -281,7 +280,6 @@ cron.schedule("*/10 * * * * *", async function () {
             unlockDate : lockLiquadidty?.data?.data?.nextUnlock?.unlockDate ? lockLiquadidty.data.data.nextUnlock.unlockDate : ''
           }
           await new_token.updateOne({_id : new ObjectId(tokenId)}, {$set : updateLockLiquadidty});
-
           if(symbol){
             const url = `https://api.dexscreener.com/latest/dex/search?q=${symbol}`;
             let response = await axios.get(url)   
@@ -296,6 +294,18 @@ cron.schedule("*/10 * * * * *", async function () {
             }
             await new_token.updateOne({_id : new ObjectId(tokenId)}, {$set : updateObject});
           }
+          console.log("============================================================")
+          let volumeConfig = {
+            method: 'get',
+            maxBodyLength: Infinity,
+            url :`https://public-api.dextools.io/advanced/v2/pool/ether/${poolAddress}/price`,
+            headers: { 
+              'accept': 'application/json',
+              'x-api-key': process.env.dexToolApi
+            }
+          }      
+          let volumeDetails = await axios.request(volumeConfig)
+          console.log("volumeDetails data  ===>>>>", volumeDetails.data.data)
         }catch(error){
           console.error("error", error.response.data.message)
           await new_token.updateOne({_id : new ObjectId(tokenId)}, {$set : {lat_update_time : new Date()}});
@@ -381,3 +391,143 @@ cron.schedule("0 */20 * * * *", async function(){
 
 
 
+
+
+////////////////////////////////////////////// SPLIT SERVICES /////////////////////////////////////////////////////////
+
+
+cron.schedule("0 */10 * * * *", async function () {
+  try{
+    console.log("Price socket is running ====>>>>>>>")
+    console.log("process.env ====>>>>>>>", process.env.dexToolApi)
+    let tokens = await new_token.find({});
+    console.log("token lenght: " + tokens.length)
+    if(tokens.length > 0){
+      for(let token= 0; token < tokens.length; token++){
+        let contract_address = tokens[token].contract_address
+        let poolAddress = tokens[token].pair_address
+        console.log("pool address", poolAddress)
+        let tokenId = tokens[token]._id.toString()
+        let configDexTool = {
+          method: 'get',
+          maxBodyLength: Infinity,
+          url: `https://public-api.dextools.io/advanced/v2/token/ether/${contract_address}/price`,
+          headers: { 
+            'accept': 'application/json',
+            'x-api-key': process.env.dexToolApi
+          }
+        };
+        let responsePrice = await axios.request(configDexTool)
+        console.log("responsePrice", responsePrice.data.data)
+        let price = (responsePrice?.data?.data?.price) ? responsePrice.data.data.price : 0
+        await new_token.updateOne({_id : new ObjectId(tokenId)}, {$set : {price : price}})
+      }
+    }
+  }catch(error){
+    console.error("error comming ===>>>>>", error)
+  }
+})
+
+cron.schedule("0 */20 * * * *", async function () {
+  try{
+    console.log("liquidity socket is running ====>>>>>>>")
+    let tokens = await new_token.find({});
+    console.log("token lenght: " + tokens.length)
+    if(tokens.length > 0){
+      for(let token= 0; token < tokens.length; token++){
+        let poolAddress = tokens[token].pair_address
+        let tokenId = tokens[token]._id.toString()
+        let configLiq = {
+          method: 'get',
+          maxBodyLength: Infinity,
+          url : `https://public-api.dextools.io/advanced/v2/pool/ether/${poolAddress}/liquidity`,
+          headers: { 
+            'accept': 'application/json',
+            'x-api-key': process.env.dexToolApi
+          }
+        };
+        let responseLiq = await axios.request(configLiq)
+        console.log("response ====>>>>>>>", responseLiq.data.data)
+        let updateLiquadidty = {
+          currentLiquidity : (responseLiq?.data?.data?.liquidity) ?  responseLiq.data.data.liquidity : 0
+        }
+        await new_token.updateOne({_id : new ObjectId(tokenId)}, {$set : updateLiquadidty});
+      }
+    }
+  }catch(error){
+    console.error("error comming ===>>>>>", error)
+  }
+})
+
+cron.schedule("0 */30 * * * *", async function () {
+  try{
+    console.log("lock socket is running ====>>>>>>>")
+    let tokens = await new_token.find({});
+    console.log("token lenght: " + tokens.length)
+    if(tokens.length > 0){
+      for(let token= 0; token < tokens.length; token++){
+        let poolAddress = tokens[token].pair_address
+        let tokenId = tokens[token]._id.toString()
+        let lockConfig = {
+          method: 'get',
+          maxBodyLength: Infinity,
+          url :`https://public-api.dextools.io/advanced/v2/pool/ether/${poolAddress}/locks`,
+          headers: { 
+            'accept': 'application/json',
+            'x-api-key': process.env.dexToolApi
+          }
+        }      
+        let lockLiquadidty = await axios.request(lockConfig)
+        console.log("lock liqudidty data  ===>>>>", lockLiquadidty.data.data)
+        let updateLockLiquadidty = {
+          locked_percentage : lockLiquadidty?.data?.data?.amountLocked ? (lockLiquadidty.data.data.amountLocked) : 0,
+          unlockDate : lockLiquadidty?.data?.data?.nextUnlock?.unlockDate ? lockLiquadidty.data.data.nextUnlock.unlockDate : ''
+        }
+        await new_token.updateOne({_id : new ObjectId(tokenId)}, {$set : updateLockLiquadidty});
+      }
+    }
+  }catch(error){
+    console.error("error comming ===>>>>>", error)
+  }
+})
+
+cron.schedule("*/10 * * * * *", async function () {
+  try{
+    console.log("lock socket is running ====>>>>>>>")
+    let tokens = await new_token.find({});
+    console.log("token lenght: " + tokens.length)
+    if(tokens.length > 0){
+      for(let token= 0; token < tokens.length; token++){
+        let poolAddress = tokens[token].pair_address
+        let tokenId = tokens[token]._id.toString()
+        let volumeConfig = {
+          method: 'get',
+          maxBodyLength: Infinity,
+          url :`https://public-api.dextools.io/advanced/v2/pool/ether/${poolAddress}/price`,
+          headers: { 
+            'accept': 'application/json',
+            'x-api-key': process.env.dexToolApi
+          }
+        }      
+        let volumeDetails = await axios.request(volumeConfig)
+        let data = volumeDetails.data.data;
+        let insertObject = {
+          volume6h : (data?.volume6h) ? data.volume6h : 0,
+          buys6h: (data?.buys6h) ? data.buys6h : 0,
+          sells6h: (data?.sells6h) ? data.sells6h : 0,
+          sellVolume6h: (data?.sellVolume6h) ? data.sellVolume6h : 0,
+          buyVolume6h: (data?.buyVolume6h) ? data.buyVolume6h : 0,
+          volume24h: (data?.volume24h) ? data.volume24h : 0,
+          buys24h: (data?.buys24h) ? data.buys24h : 0,
+          sells24h: (data?.sells24h) ? data.sells24h : 0,
+          sellVolume24h: (data?.sellVolume24h) ? data.sellVolume24h : 0,
+          buyVolume24h: (data?.buyVolume24h) ? data.buyVolume24h : 0
+        }
+        console.log("volumeDetails data  ===>>>>", insertObject)
+        await new_token.updateOne({_id : new ObjectId(tokenId)}, {$set : insertObject});
+      }
+    }
+  }catch(error){
+    console.error("error comming ===>>>>>", error)
+  }
+})
