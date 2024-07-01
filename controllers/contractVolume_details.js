@@ -522,6 +522,7 @@ cron.schedule("*/10 * * * * *", async function () {
           buyVolume24h: (data?.buyVolume24h) ? data.buyVolume24h : 0
         }
         console.log("volumeDetails data  ===>>>>", insertObject)
+        console.log("sellVolumeDetails data ===>>>>",poolAddress)
         await new_token.updateOne({_id : new ObjectId(tokenId)}, {$set : insertObject});
       }
     }
