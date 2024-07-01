@@ -487,7 +487,7 @@ cron.schedule("0 */30 * * * *", async function () {
   }
 })
 
-cron.schedule("0 */5 * * * *", async function () {
+cron.schedule("*/10 * * * * *", async function () {
   try{
     console.log("lock socket is running ====>>>>>>>")
     let tokens = await new_token.find({});
@@ -511,6 +511,8 @@ cron.schedule("0 */5 * * * *", async function () {
           volume6h : (data?.volume6h) ? data.volume6h : 0,
           buys6h: (data?.buys6h) ? data.buys6h : 0,
           sells6h: (data?.sells6h) ? data.sells6h : 0,
+          sellVolume5m : (data?.sellVolume5m) ? data.sellVolume5m : 0,
+          buyVolume5m : (data?.buyVolume5m) ? data.buyVolume5m : 0,
           sellVolume6h: (data?.sellVolume6h) ? data.sellVolume6h : 0,
           buyVolume6h: (data?.buyVolume6h) ? data.buyVolume6h : 0,
           volume24h: (data?.volume24h) ? data.volume24h : 0,
@@ -528,7 +530,7 @@ cron.schedule("0 */5 * * * *", async function () {
   }
 })
 
-cron.schedule("*/5 * * * * *", async function () {
+cron.schedule("0 */10 * * * *", async function () {
   try{
     console.log("lock socket is running ====>>>>>>>")
     let tokens = await new_token.find({});

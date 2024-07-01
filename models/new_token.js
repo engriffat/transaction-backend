@@ -56,6 +56,14 @@ const new_tokens = new Schema({
         type: Number,
         default : 0
     },
+    sellVolume5m : { 
+        type: Number,
+        default : 0
+    },
+    buyVolume5m :  {
+        type: Number,
+        default : 0
+    },
     sell_tax_min : {
         type: Number,
         default : 0
