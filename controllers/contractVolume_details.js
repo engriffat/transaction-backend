@@ -105,43 +105,43 @@ cron.schedule("0 */20 * * * *", async function () {
     }
 });
 
-cron.schedule("0 */16 * * * *", async function () {
-// cron.schedule("0 */30 * * * *", async function () {
-  try{
-    console.log("price crone is working =================>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-    const contractsObject = await Contract.find();
-    if(contractsObject.length > 0){
-      for(const trx of response.raw.result) {
-        const response = await Moralis.EvmApi.token.getTokenPrice({
-          "chain": "0x1",
-          "include": "percent_change",
-          "address": trx.contract_address
-        });
-        if(response.raw){
-          let priceUSD = response.raw.usdPrice
-          console.log("usdt price", priceUSD);
-          if(priceUSD > 0){
-            await price.updateOne({symbol : response.raw.tokenSymbol, contract_address : contract_address}, {$set : {price : priceUSD}}, {upsert : true})
-          }
-        }
-      }
-    }
-    const response = await Moralis.EvmApi.token.getTokenPrice({
-      "chain": "0x1",
-      "include": "percent_change",
-      "address": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
-    });
-    if(response.raw){
-      let priceUSD = response.raw.usdPrice
-      console.log("usdt price", priceUSD);
-      if(priceUSD > 0){
-        await price.updateOne({symbol : "ETH", contract_address : "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"}, {$set : {price : priceUSD}}, {upsert : true})
-      }
-    }
-  }catch(error){
-    console.error(error)
-  }
-});
+// cron.schedule("0 */16 * * * *", async function () {
+// // cron.schedule("0 */30 * * * *", async function () {
+//   try{
+//     console.log("price crone is working =================>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+//     const contractsObject = await Contract.find();
+//     if(contractsObject.length > 0){
+//       for(const trx of response.raw.result) {
+//         const response = await Moralis.EvmApi.token.getTokenPrice({
+//           "chain": "0x1",
+//           "include": "percent_change",
+//           "address": trx.contract_address
+//         });
+//         if(response.raw){
+//           let priceUSD = response.raw.usdPrice
+//           console.log("usdt price", priceUSD);
+//           if(priceUSD > 0){
+//             await price.updateOne({symbol : response.raw.tokenSymbol, contract_address : contract_address}, {$set : {price : priceUSD}}, {upsert : true})
+//           }
+//         }
+//       }
+//     }
+//     const response = await Moralis.EvmApi.token.getTokenPrice({
+//       "chain": "0x1",
+//       "include": "percent_change",
+//       "address": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
+//     });
+//     if(response.raw){
+//       let priceUSD = response.raw.usdPrice
+//       console.log("usdt price", priceUSD);
+//       if(priceUSD > 0){
+//         await price.updateOne({symbol : "ETH", contract_address : "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"}, {$set : {price : priceUSD}}, {upsert : true})
+//       }
+//     }
+//   }catch(error){
+//     console.error(error)
+//   }
+// });
 
 cron.schedule("0 */3 * * * *", async function () {
 // cron.schedule("*/20 * * * * *", async function () {
@@ -389,10 +389,6 @@ cron.schedule("0 */20 * * * *", async function(){
   }
 })
 
-
-
-
-
 ////////////////////////////////////////////// SPLIT SERVICES /////////////////////////////////////////////////////////
 
 
@@ -491,7 +487,7 @@ cron.schedule("0 */30 * * * *", async function () {
   }
 })
 
-cron.schedule("*/10 * * * * *", async function () {
+cron.schedule("0 */5 * * * *", async function () {
   try{
     console.log("lock socket is running ====>>>>>>>")
     let tokens = await new_token.find({});
@@ -525,6 +521,40 @@ cron.schedule("*/10 * * * * *", async function () {
         }
         console.log("volumeDetails data  ===>>>>", insertObject)
         await new_token.updateOne({_id : new ObjectId(tokenId)}, {$set : insertObject});
+      }
+    }
+  }catch(error){
+    console.error("error comming ===>>>>>", error)
+  }
+})
+
+cron.schedule("*/5 * * * * *", async function () {
+  try{
+    console.log("lock socket is running ====>>>>>>>")
+    let tokens = await new_token.find({});
+    console.log("token lenght: " + tokens.length)
+    if(tokens.length > 0){
+      for(let token= 0; token < tokens.length; token++){
+        let contract_address = tokens[token].contract_address
+        let tokenId = tokens[token]._id.toString()
+        let volumeConfig = {
+          method: 'get',
+          maxBodyLength: Infinity,
+          url :`https://public-api.dextools.io/advanced/v2/token/ether/${contract_address}/audit`,
+          headers: { 
+            'accept': 'application/json',
+            'x-api-key': process.env.dexToolApi
+          }
+        }      
+        let tax = await axios.request(volumeConfig)
+        let insertTax = {
+          buy_tax_min : (tax?.data?.data?.buyTax?.min) ? tax?.data?.data?.buyTax?.min.toFixed(4) : 0,
+          buy_tax_max : (tax?.data?.data?.buyTax?.max) ?  tax?.data?.data?.buyTax?.max.toFixed(4) : 0,
+          sell_tax_min:  (tax?.data?.data?.sellTax?.min) ? tax?.data?.data?.sellTax?.min.toFixed(4)  :  0,
+          sell_tax_max  : (tax?.data?.data?.sellTax?.max) ? tax?.data?.data?.sellTax?.max.toFixed(4) :  0
+        }
+        console.log("insertTax data  ===>>>>", insertTax)
+        await new_token.updateOne({_id : new ObjectId(tokenId)}, {$set : insertTax});
       }
     }
   }catch(error){

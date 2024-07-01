@@ -47,6 +47,22 @@ const new_tokens = new Schema({
     burn_liquidity : {
         type: Number,
         default : 0
+    }, 
+    buy_tax_min : {
+        type: Number,
+        default : 0
+    },
+    buy_tax_max : {
+        type: Number,
+        default : 0
+    },
+    sell_tax_min : {
+        type: Number,
+        default : 0
+    },
+    sell_tax_max : {
+        type: Number,
+        default : 0
     },
     locked_percentage  : {
         type: Number,
