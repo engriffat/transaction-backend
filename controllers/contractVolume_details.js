@@ -487,7 +487,7 @@ cron.schedule("0 */30 * * * *", async function () {
   }
 })
 
-cron.schedule("*/10 * * * * *", async function () {
+cron.schedule("0 */30 * * * *", async function () {
   try{
     console.log("lock socket is running ====>>>>>>>")
     let tokens = await new_token.find({});
