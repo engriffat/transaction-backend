@@ -2,6 +2,7 @@ const ethers = require('ethers');
 require('../utility/dbConn');
 const IUniswapV2Pair = require('@uniswap/v2-core/build/IUniswapV2Pair.json')
 require('dotenv').config()
+const TGNotification = require('../utility/sendTGNotification')
 const new_token = require('../models/new_token')
 let WETHAddress= '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
 let factoryAddress= '0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f' 
@@ -71,6 +72,7 @@ factory.on('PairCreated', async (token0, token1, pairAddress) => {
     const name = await contract.methods.name().call();
     console.log(`Token Symbol: ${symbol}`);
     console.log(`Token name: ${name}`);
+    await TGNotification.sendAlert(`New Token Detected, contract address : ${saveAddress}, pair address : ${pairAddress} and symbol : ${symbol}`)
     await new_token.updateOne({contract_address : saveAddress},{$set: {pair_address : pairAddress, symbol : symbol}},{upsert: true});
   }catch(error){
     console.log("error ====>>>>>", error.message)
@@ -80,6 +82,8 @@ factory.on('PairCreated', async (token0, token1, pairAddress) => {
     const name = await contract.methods.name().call();
     console.log(`Token Symbol: ${symbol}`);
     console.log(`Token name: ${name}`);
+    TGNotification.sendAlert(``)
+    await TGNotification.sendAlert(`New Token Detected, contract address : ${saveAddress}, pair address : ${pairAddress} and symbol : ${symbol}`)
     await new_token.updateOne({contract_address : saveAddress},{$set: {pair_address : pairAddress, symbol : symbol}},{upsert: true})
     console.log(`Listening for new pairs...\n`)
   }
