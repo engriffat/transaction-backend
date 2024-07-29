@@ -9,6 +9,7 @@ const axios = require('axios');
 const new_token = require('../models/new_token')
 const { EvmChain } = require("@moralisweb3/common-evm-utils");
 const Volume = require('../models/Volume')
+const TGNotification = require('../utility/sendTGNotification')
 const price = require('../models/price')
 const IUniswapV2Pair = require('@uniswap/v2-core/build/IUniswapV2Pair.json')
 const Contract = require("../models/Contract");
@@ -560,6 +561,53 @@ cron.schedule("0 */10 * * * *", async function () {
         await new_token.updateOne({_id : new ObjectId(tokenId)}, {$set : insertTax});
       }
     }
+  }catch(error){
+    console.error("error comming ===>>>>>", error)
+  }
+})
+
+// send telegram alterts 
+cron.schedule("*/10 * * * * *", async function() {
+  try{
+    let currentTime = new Date();
+    currentTime.setMinutes(currentTime.getMinutes() - 10);
+    let getRecordAlert = await new_token.find({$or : [{tg_alert : {$exists : false}},  {tg_alert : false}], createdAt : {$lte : currentTime}}).limit(1)
+    console.log("getRecordAlert lenght: " + getRecordAlert.length)
+    for(let i = 0; i < getRecordAlert.length; i++){
+      let id = getRecordAlert[i]._id.toString()
+      let contract_address = (getRecordAlert[i]?.contract_address) ? getRecordAlert[i].contract_address : ""
+      let pair_address = (getRecordAlert[i]?.pair_address) ? getRecordAlert[i].pair_address : ""
+      let owner_address = (getRecordAlert[i]?.ownerAddress)? getRecordAlert[i].ownerAddress : ""
+      let symbol = (getRecordAlert[i]?.symbol) ? getRecordAlert[i].symbol : ""
+      let liqudity = (getRecordAlert[i]?.currentLiquidity)? getRecordAlert[i].currentLiquidity : 0
+      let burn_liquidity = (getRecordAlert[i]?.burn_liquidity) ? getRecordAlert[i].burn_liquidity : 0      
+      let buyVolume24h = (getRecordAlert[i]?.buyVolume24h) ?getRecordAlert[i].buyVolume24h : 0
+      let sellVolume24h = (getRecordAlert[i]?.sellVolume24h) ? getRecordAlert[i].sellVolume24h : 0
+      let locked_percentage = (getRecordAlert[i]?.locked_percentage) ? getRecordAlert[i].locked_percentage : 0
+      let unlockDate = (getRecordAlert[i]?.unlockDate) ? getRecordAlert[i].unlockDate : ""
+      let sell_tax_min = (getRecordAlert[i]?.sell_tax_min) ? getRecordAlert[i].sell_tax_min : 0
+      let sell_tax_max = (getRecordAlert[i]?.sell_tax_max) ? getRecordAlert[i].sell_tax_max : 0
+      let buy_tax_max = (getRecordAlert[i]?.buy_tax_max) ? getRecordAlert[i].buy_tax_max : 0
+      let buy_tax_min = (getRecordAlert[i]?.buy_tax_min) ? getRecordAlert[i].buy_tax_min : 0
+      let buyVolume5m = (getRecordAlert[i]?.buyVolume5m) ? getRecordAlert[i].buyVolume5m : 0
+      let sellVolume5m = (getRecordAlert[i]?.sellVolume5m) ? getRecordAlert[i].sellVolume5m : 0
+      let currentPriceUsd = (getRecordAlert[i]?.currentPriceUsd) ? getRecordAlert[i].currentPriceUsd : 0
+      // let market_cap = (getRecordAlert[i]?.) ? getRecordAlert[i]. :""
+      // let current_supply = (getRecordAlert[i]?.) ? getRecordAlert[i]. : ""
+      // let holders = (getRecordAlert[i]?.) ? getRecordAlert[i]. : ""
+      // let total_market_cap = (getRecordAlert[i]?.) ? getRecordAlert[i]. :""
+      // let total_supply = (getRecordAlert[i]?.) ? getRecordAlert[i]. : ""
+      // let validity = (getRecordAlert[i]?.) ? getRecordAlert[i]. : ""
+      // let current_supply_percentage = (getRecordAlert[i]?.) ? getRecordAlert[i]. :""
+      let alertMessage = `New token contract address: ${contract_address}, pair address : ${pair_address}, owner address: ${owner_address}, symbol: ${symbol}
+      liqudity: ${liqudity}, burn liqudity: ${burn_liquidity}, buy volume 24: ${buyVolume24h}, sell volume 24: ${sellVolume24h}, locked_percentage: ${locked_percentage}
+      unlockDate: ${unlockDate}, sell tax minimum: ${sell_tax_min}, sell tax maximum: ${sell_tax_max}, buy tax minimum: ${buy_tax_min}, sell tax maximum: ${buy_tax_max}
+      buy Volume 5m: ${buyVolume5m}, sell Volume 5m: ${sellVolume5m} and current price is ${currentPriceUsd}
+      `;
+      await TGNotification.sendAlert(alertMessage);
+      //await new_token.updateOne({_id : new ObjectId(id)}, {$set: {tg_alert : true}})
+    }
+
   }catch(error){
     console.error("error comming ===>>>>>", error)
   }

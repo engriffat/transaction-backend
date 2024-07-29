@@ -1,6 +1,10 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 const new_tokens = new Schema({
+    tg_alert : {
+        type : Boolean,
+        default : false
+    },
     contract_address: {
         type: String,
         default : ""

@@ -72,7 +72,7 @@ factory.on('PairCreated', async (token0, token1, pairAddress) => {
     const name = await contract.methods.name().call();
     console.log(`Token Symbol: ${symbol}`);
     console.log(`Token name: ${name}`);
-    await TGNotification.sendAlert(`New Token Detected, contract address : ${saveAddress}, pair address : ${pairAddress} and symbol : ${symbol}`)
+    // await TGNotification.sendAlert(`New Token Detected, contract address : ${saveAddress}, pair address : ${pairAddress} and symbol : ${symbol}`)
     await new_token.updateOne({contract_address : saveAddress},{$set: {pair_address : pairAddress, symbol : symbol}},{upsert: true});
   }catch(error){
     console.log("error ====>>>>>", error.message)
@@ -83,14 +83,11 @@ factory.on('PairCreated', async (token0, token1, pairAddress) => {
     console.log(`Token Symbol: ${symbol}`);
     console.log(`Token name: ${name}`);
     TGNotification.sendAlert(``)
-    await TGNotification.sendAlert(`New Token Detected, contract address : ${saveAddress}, pair address : ${pairAddress} and symbol : ${symbol}`)
+    // await TGNotification.sendAlert(`New Token Detected, contract address : ${saveAddress}, pair address : ${pairAddress} and symbol : ${symbol}`)
     await new_token.updateOne({contract_address : saveAddress},{$set: {pair_address : pairAddress, symbol : symbol}},{upsert: true})
     console.log(`Listening for new pairs...\n`)
   }
 });
-
-
-
 
 // const ethers = require('ethers');
 // require("dotenv").config();
