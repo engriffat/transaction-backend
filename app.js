@@ -19,7 +19,7 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var debug = require('debug')('sniperBot:server');
 var http = require('http');
-const port = normalizePort(process.env.PORT || 3004);
+const port = normalizePort(process.env.PORT || 3005);
 app.use(cors({ origin: '*'}));
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());

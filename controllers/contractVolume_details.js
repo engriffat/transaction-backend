@@ -600,9 +600,9 @@ cron.schedule("*/10 * * * * *", async function() {
       // let validity = (getRecordAlert[i]?.) ? getRecordAlert[i]. : ""
       // let current_supply_percentage = (getRecordAlert[i]?.) ? getRecordAlert[i]. :""
       let alertMessage = `New token contract address: ${contract_address},\n pair address : ${pair_address},\n owner address: ${owner_address}, \n symbol: ${symbol}\n
-      liqudity: ${liqudity}, burn liqudity: ${burn_liquidity}, buy volume 24: ${buyVolume24h}, sell volume 24: ${sellVolume24h}, locked_percentage: ${locked_percentage}
-      unlockDate: ${unlockDate}, sell tax minimum: ${sell_tax_min}, sell tax maximum: ${sell_tax_max}, buy tax minimum: ${buy_tax_min}, sell tax maximum: ${buy_tax_max}
-      buy Volume 5m: ${buyVolume5m}, sell Volume 5m: ${sellVolume5m} and current price is ${currentPriceUsd}
+      liqudity: ${liqudity},\n burn liqudity: ${burn_liquidity},\n buy volume 24: ${buyVolume24h},\n sell volume 24: ${sellVolume24h},\n locked_percentage: ${locked_percentage}\n
+      unlockDate: ${unlockDate},\n sell tax minimum: ${sell_tax_min},\n sell tax maximum: ${sell_tax_max},\n buy tax minimum: ${buy_tax_min},\n sell tax maximum: ${buy_tax_max}\n
+      buy Volume 5m: ${buyVolume5m},\n sell Volume 5m: ${sellVolume5m},\n current price is ${currentPriceUsd}
       `;
       await TGNotification.sendAlert(alertMessage);
       //await new_token.updateOne({_id : new ObjectId(id)}, {$set: {tg_alert : true}})
