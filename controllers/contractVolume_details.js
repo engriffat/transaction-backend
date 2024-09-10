@@ -192,35 +192,37 @@ cron.schedule("0 */3 * * * *", async function () {
   }
 });
 
+let dexToolApi = "1qZgD7eLUV9uvziW8biVG65a2Up0s5fS7Pjht9qA"
+
 //token honey pot service working on this only
-cron.schedule("0 */50 * * * *", async function () {
+cron.schedule("0 */10 * * * *", async function () {
   console.log("Quill check api working now ===>>>>>")
     let currentTime = new Date();
     const tenMinutesAgo = new Date(currentTime.getTime() - (30 * 60 * 1000));
     // let tokens = await new_token.find({ $or : [{lat_update_time : {$exists: false}}, {lat_update_time : {$lte : tenMinutesAgo}}]}).limit(5);
     // let tokens = await new_token.find({contract_address : {$in : [ "0x443459D45c30A03f90037d011CbE22e2183d3b12","0x405154cFAF5Ea4EF57B65b86959c73Dd079FA312","0xBE4D9c8C638B5f0864017d7F6A04b66c42953847","0x3973C606B493EeE0E14B2b5654d5c4049cE9C2d9","0x470c8950C0c3aA4B09654bC73b004615119A44b5","0x6558f69322DB3265fBD64B847D450F5Bfa8c87A5"]}});
-    let tokens = await new_token.find({});
+    let tokens = await new_token.find({}).sort({createdAt : -1})
     console.log("token lenght: " + tokens.length)
     if(tokens.length > 0){
       for(let token= 0; token < tokens.length; token++){
         // console.log("loop ===>>>>", token)
-        // console.log("process.env.dexToolApi(", process.env.dexToolApi)
         let contract_address = tokens[token].contract_address
         let poolAddress = tokens[token].pair_address
-        console.log("pool address", poolAddress)
+        console.log("contract address", contract_address)
         let tokenId = tokens[token]._id.toString()
         try{
           let configDexTool = {
             method: 'get',
             maxBodyLength: Infinity,
-            url: `https://public-api.dextools.io/advanced/v2/token/ether/${contract_address}/price`,
+            // url: `https://public-api.dextools.io/advanced/v2/token/ether/${contract_address}/price`,
+            url: `https://public-api.dextools.io/pro/v2/token/ether/${contract_address}/price`,
             headers: { 
               'accept': 'application/json',
-              'x-api-key': process.env.dexToolApi
+              'x-api-key': dexToolApi
             }
           };
           let responsePrice = await axios.request(configDexTool)
-          // console.log("responsePrice", responsePrice.data)
+          console.log("Price ===>>>>>>", responsePrice?.data?.data?.price)
           let price = (responsePrice?.data?.data?.price) ? responsePrice.data.data.price : 0
           await new_token.updateOne({_id : new ObjectId(tokenId)}, {$set : {price : price}})
           // console.log("responsePrice price", price)
@@ -249,13 +251,15 @@ cron.schedule("0 */50 * * * *", async function () {
           //   lat_update_time : new Date()
           // }
           // await new_token.updateOne({_id : new ObjectId(tokenId)}, {$set : insertObject});
+          console.log("================================================")
           let configLiq = {
             method: 'get',
             maxBodyLength: Infinity,
-            url : `https://public-api.dextools.io/advanced/v2/pool/ether/${poolAddress}/liquidity`,
+            //url : `https://public-api.dextools.io/advanced/v2/pool/ether/${poolAddress}/liquidity`,
+            url : `https://public-api.dextools.io/pro/v2/pool/ether/${poolAddress}/liquidity`,
             headers: { 
               'accept': 'application/json',
-              'x-api-key': process.env.dexToolApi
+              'x-api-key': dexToolApi
             }
           };
           let responseLiq = await axios.request(configLiq)
@@ -268,47 +272,50 @@ cron.schedule("0 */50 * * * *", async function () {
           let lockConfig = {
             method: 'get',
             maxBodyLength: Infinity,
-            url :`https://public-api.dextools.io/advanced/v2/pool/ether/${poolAddress}/locks`,
+            // url :`https://public-api.dextools.io/advanced/v2/pool/ether/${poolAddress}/locks`,
+            url :`https://public-api.dextools.io/pro/v2/pool/ether/${poolAddress}/locks`,
             headers: { 
               'accept': 'application/json',
-              'x-api-key': process.env.dexToolApi
+              'x-api-key': dexToolApi
             }
           }      
           let lockLiquadidty = await axios.request(lockConfig)
-          console.log("lock liqudidty data  ===>>>>", lockLiquadidty.data.data)
+          console.log("lock liqudidty data  ===>>>>", lockLiquadidty?.data?.data)
           let updateLockLiquadidty = {
             locked_percentage : lockLiquadidty?.data?.data?.amountLocked ? (lockLiquadidty.data.data.amountLocked) : 0,
             unlockDate : lockLiquadidty?.data?.data?.nextUnlock?.unlockDate ? lockLiquadidty.data.data.nextUnlock.unlockDate : ''
           }
           await new_token.updateOne({_id : new ObjectId(tokenId)}, {$set : updateLockLiquadidty});
-          if(symbol){
-            const url = `https://api.dexscreener.com/latest/dex/search?q=${symbol}`;
-            let response = await axios.get(url)   
-            console.log("response", response.data)
-            let data = response.data.pairs
-            const ethereumPair = data.find(pair => pair.chainId === 'ethereum');
-            let updateObject = {
-              txns : ethereumPair.txns,
-              volume : ethereumPair.volume,
-              liquidity : ethereumPair.liquidity,
-              priceChange : ethereumPair.priceChange
-            }
-            await new_token.updateOne({_id : new ObjectId(tokenId)}, {$set : updateObject});
-          }
+          console.log("============ after =============================")
+          // if(symbol){
+          //   const url = `https://api.dexscreener.com/latest/dex/search?q=${symbol}`;
+          //   let response = await axios.get(url)   
+          //   console.log("response", response.data)
+          //   let data = response.data.pairs
+          //   const ethereumPair = data.find(pair => pair.chainId === 'ethereum');
+          //   let updateObject = {
+          //     txns : ethereumPair.txns,
+          //     volume : ethereumPair.volume,
+          //     liquidity : ethereumPair.liquidity,
+          //     priceChange : ethereumPair.priceChange
+          //   }
+          //   await new_token.updateOne({_id : new ObjectId(tokenId)}, {$set : updateObject});
+          // }
           console.log("============================================================")
           let volumeConfig = {
             method: 'get',
             maxBodyLength: Infinity,
-            url :`https://public-api.dextools.io/advanced/v2/pool/ether/${poolAddress}/price`,
+            // url :`https://public-api.dextools.io/advanced/v2/pool/ether/${poolAddress}/price`,
+            url :`https://public-api.dextools.io/pro/v2/pool/ether/${poolAddress}/price`,
             headers: { 
               'accept': 'application/json',
-              'x-api-key': process.env.dexToolApi
+              'x-api-key': dexToolApi
             }
           }      
           let volumeDetails = await axios.request(volumeConfig)
           console.log("volumeDetails data  ===>>>>", volumeDetails.data.data)
         }catch(error){
-          console.error("error", error.response.data.message)
+          console.error("error asim", error.response.data.message)
           await new_token.updateOne({_id : new ObjectId(tokenId)}, {$set : {lat_update_time : new Date()}});
         }
       }//end loop
@@ -532,7 +539,7 @@ cron.schedule("0 */30 * * * *", async function () {
   }
 })
 
-cron.schedule("0 */10 * * * *", async function () {
+cron.schedule("0 */30 * * * *", async function () {
   try{
     console.log("lock socket is running ====>>>>>>>")
     let tokens = await new_token.find({});
@@ -562,13 +569,14 @@ cron.schedule("0 */10 * * * *", async function () {
       }
     }
   }catch(error){
-    console.error("error comming ===>>>>>", error)
+    console.error("error comming ===>>>>>", error.message)
   }
 })
 
 // send telegram alterts 
-cron.schedule("*/10 * * * * *", async function() {
+cron.schedule("0 0 */10 * * *", async function() {
   try{
+    console.log("Telegram service is running")
     let currentTime = new Date();
     currentTime.setMinutes(currentTime.getMinutes() - 10);
     let getRecordAlert = await new_token.find({$or : [{tg_alert : {$exists : false}},  {tg_alert : false}], createdAt : {$lte : currentTime}}).limit(1)

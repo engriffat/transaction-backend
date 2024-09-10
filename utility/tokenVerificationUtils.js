@@ -70,9 +70,26 @@ const checkOwnershipRenounced = async(contractAddress, abi) => {
         return false;
     }
 }
+const checkIsMintable = async(contractAddress, abi) => {
+    try{
+        const contract = new web3.eth.Contract(abi, contractAddress);
+        const functions = Object.keys(contract.methods);
+        if (functions.includes('mint')) {
+            console.log('The contract is mintable.');
+            return true;
+        } else {
+            console.log('The contract is not mintable.');
+            return false;
+        }
+    }catch(error){
+        console.error('Error checking mintable:', error);
+        return false;
+    }
+}
 module.exports = {
     checkContractIsVerfied,
     isBuyEnabled,
+    checkIsMintable,
     isSellEnabled,
     checkContractIsSelfDesrruct,
     checkOwnershipRenounced

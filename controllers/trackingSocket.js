@@ -1,5 +1,6 @@
 const ethers = require('ethers');
 require('../utility/dbConn');
+const tokenVerfication = require('../utility/tokenVerificationUtils')
 const IUniswapV2Pair = require('@uniswap/v2-core/build/IUniswapV2Pair.json')
 require('dotenv').config()
 const TGNotification = require('../utility/sendTGNotification')
@@ -72,8 +73,13 @@ factory.on('PairCreated', async (token0, token1, pairAddress) => {
     const name = await contract.methods.name().call();
     console.log(`Token Symbol: ${symbol}`);
     console.log(`Token name: ${name}`);
+    let status = await tokenVerfication.checkContractIsSelfDesrruct(saveAddress)
+    let mintableStatus = await tokenVerfication.checkIsMintable()
+    let mintableResponse = (mintableStatus == true) ? "token supply is not fixed" : "token supply is fixed"
+
+    let updateStatus = (status == true) ? "has self-destruct mechanism" : "no self-destruct mechanism";
     // await TGNotification.sendAlert(`New Token Detected, contract address : ${saveAddress}, pair address : ${pairAddress} and symbol : ${symbol}`)
-    await new_token.updateOne({contract_address : saveAddress},{$set: {pair_address : pairAddress, symbol : symbol}},{upsert: true});
+    await new_token.updateOne({contract_address : saveAddress},{$set: {pair_address : pairAddress, symbol : symbol, self_destruct : updateStatus, token_supply: updateStatus}},{upsert: true});
   }catch(error){
     console.log("error ====>>>>>", error.message)
     let saveAddress  = (token0 == "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2") ? token1 : token0
@@ -82,9 +88,14 @@ factory.on('PairCreated', async (token0, token1, pairAddress) => {
     const name = await contract.methods.name().call();
     console.log(`Token Symbol: ${symbol}`);
     console.log(`Token name: ${name}`);
+    let status = await tokenVerfication.checkContractIsSelfDesrruct(saveAddress)
+    let mintableStatus = await tokenVerfication.checkIsMintable()
+    let mintableResponse = (mintableStatus == true) ? "token supply is not fixed" : "token supply is fixed"
+
     TGNotification.sendAlert(``)
+    let updateStatus = (status == true) ? "has self-destruct mechanism" : "no self-destruct mechanism";
     // await TGNotification.sendAlert(`New Token Detected, contract address : ${saveAddress}, pair address : ${pairAddress} and symbol : ${symbol}`)
-    await new_token.updateOne({contract_address : saveAddress},{$set: {pair_address : pairAddress, symbol : symbol}},{upsert: true})
+    await new_token.updateOne({contract_address : saveAddress},{$set: {pair_address : pairAddress, symbol : symbol, self_destruct : updateStatus, token_supply: updateStatus}},{upsert: true})
     console.log(`Listening for new pairs...\n`)
   }
 });
