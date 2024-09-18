@@ -192,10 +192,11 @@ cron.schedule("0 */3 * * * *", async function () {
   }
 });
 
-let dexToolApi = "1qZgD7eLUV9uvziW8biVG65a2Up0s5fS7Pjht9qA"
+// let dexToolApi = "1qZgD7eLUV9uvziW8biVG65a2Up0s5fS7Pjht9qA" // for pro plan
+let dexToolApi = "YHgL80oavT7BqEvhCIIK437MDvriTM093EvVAuy1"// for advance
 
 //token honey pot service working on this only
-cron.schedule("0 */10 * * * *", async function () {
+cron.schedule("*/30 * * * * *", async function () {
   console.log("Quill check api working now ===>>>>>")
     let currentTime = new Date();
     const tenMinutesAgo = new Date(currentTime.getTime() - (30 * 60 * 1000));
@@ -214,8 +215,8 @@ cron.schedule("0 */10 * * * *", async function () {
           let configDexTool = {
             method: 'get',
             maxBodyLength: Infinity,
-            // url: `https://public-api.dextools.io/advanced/v2/token/ether/${contract_address}/price`,
-            url: `https://public-api.dextools.io/pro/v2/token/ether/${contract_address}/price`,
+            url: `https://public-api.dextools.io/advanced/v2/token/ether/${contract_address}/price`,
+            // url: `https://public-api.dextools.io/pro/v2/token/ether/${contract_address}/price`,
             headers: { 
               'accept': 'application/json',
               'x-api-key': dexToolApi
@@ -255,8 +256,8 @@ cron.schedule("0 */10 * * * *", async function () {
           let configLiq = {
             method: 'get',
             maxBodyLength: Infinity,
-            //url : `https://public-api.dextools.io/advanced/v2/pool/ether/${poolAddress}/liquidity`,
-            url : `https://public-api.dextools.io/pro/v2/pool/ether/${poolAddress}/liquidity`,
+            url : `https://public-api.dextools.io/advanced/v2/pool/ether/${poolAddress}/liquidity`,
+            // url : `https://public-api.dextools.io/pro/v2/pool/ether/${poolAddress}/liquidity`,
             headers: { 
               'accept': 'application/json',
               'x-api-key': dexToolApi
@@ -272,8 +273,8 @@ cron.schedule("0 */10 * * * *", async function () {
           let lockConfig = {
             method: 'get',
             maxBodyLength: Infinity,
-            // url :`https://public-api.dextools.io/advanced/v2/pool/ether/${poolAddress}/locks`,
-            url :`https://public-api.dextools.io/pro/v2/pool/ether/${poolAddress}/locks`,
+            url :`https://public-api.dextools.io/advanced/v2/pool/ether/${poolAddress}/locks`,
+            // url :`https://public-api.dextools.io/pro/v2/pool/ether/${poolAddress}/locks`,
             headers: { 
               'accept': 'application/json',
               'x-api-key': dexToolApi
@@ -305,8 +306,8 @@ cron.schedule("0 */10 * * * *", async function () {
           let volumeConfig = {
             method: 'get',
             maxBodyLength: Infinity,
-            // url :`https://public-api.dextools.io/advanced/v2/pool/ether/${poolAddress}/price`,
-            url :`https://public-api.dextools.io/pro/v2/pool/ether/${poolAddress}/price`,
+            url :`https://public-api.dextools.io/advanced/v2/pool/ether/${poolAddress}/price`,
+            // url :`https://public-api.dextools.io/pro/v2/pool/ether/${poolAddress}/price`,
             headers: { 
               'accept': 'application/json',
               'x-api-key': dexToolApi
