@@ -196,7 +196,7 @@ cron.schedule("0 */3 * * * *", async function () {
 let dexToolApi = "YHgL80oavT7BqEvhCIIK437MDvriTM093EvVAuy1"// for advance
 
 //token honey pot service working on this only
-cron.schedule("*/30 * * * * *", async function () {
+cron.schedule("0 */40 * * * *", async function () {
   console.log("Quill check api working now ===>>>>>")
     let currentTime = new Date();
     const tenMinutesAgo = new Date(currentTime.getTime() - (30 * 60 * 1000));
@@ -575,7 +575,7 @@ cron.schedule("0 */30 * * * *", async function () {
 })
 
 // send telegram alterts 
-cron.schedule("0 0 */10 * * *", async function() {
+cron.schedule("*/20 * * * * *", async function() {
   try{
     console.log("Telegram service is running")
     let currentTime = new Date();
@@ -614,7 +614,7 @@ cron.schedule("0 0 */10 * * *", async function() {
       buy Volume 5m: ${buyVolume5m},\n sell Volume 5m: ${sellVolume5m},\n current price is ${currentPriceUsd}
       `;
       await TGNotification.sendAlert(alertMessage);
-      await new_token.updateOne({_id : new ObjectId(id)}, {$set: {tg_alert : true}})
+      // await new_token.updateOne({_id : new ObjectId(id)}, {$set: {tg_alert : true}})
     }
 
   }catch(error){
