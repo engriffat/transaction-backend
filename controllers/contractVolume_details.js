@@ -614,7 +614,7 @@ cron.schedule("0 0 */10 * * *", async function() {
       buy Volume 5m: ${buyVolume5m},\n sell Volume 5m: ${sellVolume5m},\n current price is ${currentPriceUsd}
       `;
       await TGNotification.sendAlert(alertMessage);
-      //await new_token.updateOne({_id : new ObjectId(id)}, {$set: {tg_alert : true}})
+      await new_token.updateOne({_id : new ObjectId(id)}, {$set: {tg_alert : true}})
     }
 
   }catch(error){
